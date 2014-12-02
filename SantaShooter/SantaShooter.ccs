@@ -1,0 +1,24 @@
+<Solution>
+  <PropertyGroup Name="SantaShooter" Version="2.0.2.0" Type="CocosStudio" />
+  <SolutionFolder>
+    <Group ctype="ResourceGroup">
+      <RootFolder Name=".">
+        <Project Name="MainScene.csd" />
+        <PlistImageFolder PListFile="sprites.plist" LastPlistWriteTime="2014-12-02T23:29:54.4749277+09:00" LastImageWriteTime="2014-12-02T23:29:54.4699275+09:00" Name=".sprites_PList.Dir">
+          <PlistImageFile Name="slice01_01.png" Key="slice01_01.png" />
+          <PlistImageFile Name="slice02_02.png" Key="slice02_02.png" />
+          <PlistImageFile Name="slice03_03.png" Key="slice03_03.png" />
+          <PlistImageFile Name="slice04_04.png" Key="slice04_04.png" />
+          <PlistImageFile Name="slice05_05.png" Key="slice05_05.png" />
+          <PlistImageFile Name="slice06_06.png" Key="slice06_06.png" />
+          <PlistImageFile Name="slice07_07.png" Key="slice07_07.png" />
+          <PlistImageFile Name="slice08_08.png" Key="slice08_08.png" />
+          <PlistImageFile Name="slice09_09.png" Key="slice09_09.png" />
+          <PlistImageFile Name="slice10_10.png" Key="slice10_10.png" />
+          <PlistImageFile Name="slice11_11.png" Key="slice11_11.png" />
+          <PlistImageFile Name="slice12_12.png" Key="slice12_12.png" />
+        </PlistImageFolder>
+      </RootFolder>
+    </Group>
+  </SolutionFolder>
+</Solution>
