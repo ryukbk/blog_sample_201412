@@ -9,18 +9,17 @@ proj.android/proguard-project.txt
 
 # iOS/Mac
 proj.ios_mac/build/
-proj.ios_mac/Copong.xcodeproj/project.xcworkspace/xcuserdata/
-proj.ios_mac/Copong.xcodeproj/project.xcworkspace/xcshareddata/
-proj.ios_mac/Copong.xcodeproj/xcuserdata/
-proj.ios_mac/Copong.xcodeproj/xcshareddata/
+proj.ios_mac/SantaShooter.xcodeproj/project.xcworkspace/xcuserdata/
+proj.ios_mac/SantaShooter.xcodeproj/project.xcworkspace/xcshareddata/
+proj.ios_mac/SantaShooter.xcodeproj/xcuserdata/
+proj.ios_mac/SantaShooter.xcodeproj/xcshareddata/
 
 # Win32
 proj.win32/Debug.win32/
 proj.win32/Release.win32/
-proj.win32/Copong.opensdf
-proj.win32/Copong.sdf
-proj.win32/Copong.v12.suo
-proj.win32/game.aps
+proj.win32/SantaShooter.opensdf
+proj.win32/SantaShooter.sdf
+proj.win32/SantaShooter.v12.suo
 
 # Misc
 build/
