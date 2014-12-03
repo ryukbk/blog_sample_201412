@@ -3,8 +3,7 @@
   <SolutionFolder>
     <Group ctype="ResourceGroup">
       <RootFolder Name=".">
-        <Project Name="MainScene.csd" />
-        <PlistImageFolder PListFile="sprites.plist" LastPlistWriteTime="2014-12-02T23:29:54.4749277+09:00" LastImageWriteTime="2014-12-02T23:29:54.4699275+09:00" Name=".sprites_PList.Dir">
+        <PlistImageFolder PListFile="sprites.plist" LastPlistWriteTime="2014-12-03T16:42:25.0286503+09:00" LastImageWriteTime="2014-12-03T16:42:25.0306505+09:00" Name=".sprites_PList.Dir">
           <PlistImageFile Name="slice01_01.png" Key="slice01_01.png" />
           <PlistImageFile Name="slice02_02.png" Key="slice02_02.png" />
           <PlistImageFile Name="slice03_03.png" Key="slice03_03.png" />
@@ -18,6 +17,10 @@
           <PlistImageFile Name="slice11_11.png" Key="slice11_11.png" />
           <PlistImageFile Name="slice12_12.png" Key="slice12_12.png" />
         </PlistImageFolder>
+        <Project Name="WalkDown.csd" />
+        <Project Name="WalkUp.csd" />
+        <Project Name="WalkLeft.csd" />
+        <Project Name="WalkRight.csd" />
       </RootFolder>
     </Group>
   </SolutionFolder>
