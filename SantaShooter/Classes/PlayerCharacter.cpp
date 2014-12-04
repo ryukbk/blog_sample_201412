@@ -64,7 +64,7 @@ void PlayerCharacter::playWalkDown()
 	walkDownAnimation->gotoFrameAndPlay(0, 40, true);
 }
 
-void PlayerCharacter::stayIdle()
+void PlayerCharacter::stayIdle(bool flipped)
 {
 	walkUpAnimation->pause();
 	walkUp->setVisible(false);
@@ -73,5 +73,8 @@ void PlayerCharacter::stayIdle()
 	walkDown->setVisible(false);
 
 	auto idleRight = this->getChildByName("IDLE_RIGHT");
+	if (flipped) {
+		static_cast<Sprite*>(idleRight)->setFlippedX(true);
+	}
 	idleRight->setVisible(true);
 }

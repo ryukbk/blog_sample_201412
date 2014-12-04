@@ -69,26 +69,50 @@ bool GameScene::init()
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
 	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
 
-	auto player = PlayerCharacter::create();
-	player->setPosition(Vec2(80, 85));
+	auto player1 = PlayerCharacter::create();
+	player1->setPosition(Vec2(80, visibleSize.height / 2));
+	player1->setScale(4.0f);
 
-	this->addChild(player);
+	this->addChild(player1);
+
+	auto player2 = PlayerCharacter::create();
+	player2->setPosition(Vec2(visibleSize.width - 80, visibleSize.height / 2));
+	player2->setScale(4.0f);
+	player2->stayIdle(true);
+
+	this->addChild(player2);
 
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
 	auto listener = EventListenerKeyboard::create();
 
-	//player->retain();
-
-	listener->onKeyPressed = [player](EventKeyboard::KeyCode keyCode, Event* event) {
-		if (keyCode == EventKeyboard::KeyCode::KEY_UP_ARROW) {
-			player->playWalkUp();
-		} else if (keyCode == EventKeyboard::KeyCode::KEY_DOWN_ARROW) {
-			player->playWalkDown();
+	listener->onKeyPressed = [player1, player2](EventKeyboard::KeyCode keyCode, Event* event) {
+		switch (keyCode) {
+		case EventKeyboard::KeyCode::KEY_W:
+			player1->playWalkUp();
+			break;
+		case EventKeyboard::KeyCode::KEY_S:
+			player1->playWalkDown();
+			break;
+		case EventKeyboard::KeyCode::KEY_UP_ARROW:
+			player2->playWalkUp();
+			break;
+		case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+			player2->playWalkDown();
+			break;
 		}
 	};
 
-	listener->onKeyReleased = [player](EventKeyboard::KeyCode keyCode, Event* event) {
-		player->stayIdle();
+	listener->onKeyReleased = [player1, player2](EventKeyboard::KeyCode keyCode, Event* event) {
+		switch (keyCode) {
+		case EventKeyboard::KeyCode::KEY_W:
+		case EventKeyboard::KeyCode::KEY_S:
+			player1->stayIdle(false);
+			break;
+		case EventKeyboard::KeyCode::KEY_UP_ARROW:
+		case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+			player2->stayIdle(true);
+			break;
+		}
 	};
 
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);

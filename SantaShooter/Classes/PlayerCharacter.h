@@ -21,5 +21,5 @@ public:
 
 	void playWalkUp();
 	void playWalkDown();
-	void stayIdle();
+	void stayIdle(bool flipped);
 };
