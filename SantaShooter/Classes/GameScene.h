@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
+
 #include "cocos2d.h"
+#include "cocostudio/CocoStudio.h"
 
 class GameScene : public cocos2d::Node
 {

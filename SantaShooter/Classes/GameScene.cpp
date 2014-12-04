@@ -1,6 +1,9 @@
 #include "GameScene.h"
+#include "PlayerCharacter.h"
 
 USING_NS_CC;
+
+using namespace cocostudio::timeline;
 
 Scene* GameScene::createScene()
 {
@@ -63,15 +66,33 @@ bool GameScene::init()
     // add the label as a child to this layer
     this->addChild(label, 1);
 
-    // add "GameScene" splash screen"
-    //auto sprite = Sprite::create("GameScene.png");
+	auto spriteFrameCache = SpriteFrameCache::getInstance();
+	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
 
-    // position the sprite on the center of the screen
-    //sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+	auto player = PlayerCharacter::create();
+	player->setPosition(Vec2(80, 85));
 
-    // add the sprite as a child to this layer
-    //this->addChild(sprite, 0);
-    
+	this->addChild(player);
+
+	auto dispatcher = Director::getInstance()->getEventDispatcher();
+	auto listener = EventListenerKeyboard::create();
+
+	//player->retain();
+
+	listener->onKeyPressed = [player](EventKeyboard::KeyCode keyCode, Event* event) {
+		if (keyCode == EventKeyboard::KeyCode::KEY_UP_ARROW) {
+			player->playWalkUp();
+		} else if (keyCode == EventKeyboard::KeyCode::KEY_DOWN_ARROW) {
+			player->playWalkDown();
+		}
+	};
+
+	listener->onKeyReleased = [player](EventKeyboard::KeyCode keyCode, Event* event) {
+		player->stayIdle();
+	};
+
+	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
     return true;
 }
 
