@@ -70,13 +70,13 @@ bool GameScene::init()
 	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
 
 	auto player1 = PlayerCharacter::create();
-	player1->setPosition(Vec2(80, visibleSize.height / 2));
+	player1->setPosition(Vec2(PLAYER_X_POS, visibleSize.height / 2));
 	player1->setScale(4.0f);
 
 	this->addChild(player1);
 
 	auto player2 = PlayerCharacter::create();
-	player2->setPosition(Vec2(visibleSize.width - 80, visibleSize.height / 2));
+	player2->setPosition(Vec2(visibleSize.width - PLAYER_X_POS, visibleSize.height / 2));
 	player2->setScale(4.0f);
 	player2->stayIdle(true);
 

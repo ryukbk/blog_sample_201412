@@ -40,6 +40,17 @@ PlayerCharacter::~PlayerCharacter()
 	walkDownAnimation->release();
 }
 
+void PlayerCharacter::Move(bool up)
+{
+	this->stopAllActions();
+
+	Point start = this->getPosition();
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point end(start.x, up ? visibleSize.height : 0);
+	float duration = start.getDistance(end) / PLAYER_MOVE_SPEED;
+	this->runAction(MoveTo::create(duration, end));
+}
+
 void PlayerCharacter::playWalkUp()
 {
 	auto idleRight = this->getChildByName("IDLE_RIGHT");
@@ -50,6 +61,8 @@ void PlayerCharacter::playWalkUp()
 
 	walkUp->setVisible(true);
 	walkUpAnimation->gotoFrameAndPlay(0, 40, true);
+
+	Move(true);
 }
 
 void PlayerCharacter::playWalkDown()
@@ -62,10 +75,14 @@ void PlayerCharacter::playWalkDown()
 
 	walkDown->setVisible(true);
 	walkDownAnimation->gotoFrameAndPlay(0, 40, true);
+
+	Move(false);
 }
 
 void PlayerCharacter::stayIdle(bool flipped)
 {
+	this->stopAllActions();
+
 	walkUpAnimation->pause();
 	walkUp->setVisible(false);
 
@@ -76,5 +93,6 @@ void PlayerCharacter::stayIdle(bool flipped)
 	if (flipped) {
 		static_cast<Sprite*>(idleRight)->setFlippedX(true);
 	}
+
 	idleRight->setVisible(true);
 }
