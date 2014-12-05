@@ -9,7 +9,7 @@ static const float PLAYER_MOVE_SPEED = 200.0f;
 
 static const float PLAYER_GIFTBOX_SCALE = 3.0f;
 
-static const int CONTACT_BIT_MASK = 0x00000001;
+static const int CONTACT_BIT_MASK = 1;
 
 class PlayerCharacter : public cocos2d::Node
 {

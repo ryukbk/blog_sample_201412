@@ -113,7 +113,7 @@ void PlayerCharacter::attack(cocos2d::Node* scene, cocos2d::Touch* touch, cocos2
 
 	Size originalSize = giftbox->getContentSize();
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_GIFTBOX_SCALE, originalSize.height * PLAYER_GIFTBOX_SCALE));
-	boxBody->setDynamic(false);
+	// If setDynamic(false) collision is not detected
 	boxBody->setRotationEnable(false);
 	boxBody->setContactTestBitmask(CONTACT_BIT_MASK);
 	giftbox->setPhysicsBody(boxBody);

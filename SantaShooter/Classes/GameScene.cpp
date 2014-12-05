@@ -81,7 +81,6 @@ bool GameScene::init()
 
 	this->addChild(player2);
 
-	auto dispatcher = Director::getInstance()->getEventDispatcher();
 	auto listener = EventListenerKeyboard::create();
 
 	listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
@@ -114,16 +113,16 @@ bool GameScene::init()
 		}
 	};
 
-	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
 
 	auto touchListener = EventListenerTouchAllAtOnce::create();
 	touchListener->onTouchesBegan = CC_CALLBACK_2(GameScene::onTouchesBegan, this);
 	touchListener->onTouchesEnded = CC_CALLBACK_2(GameScene::onTouchesEnded, this);
-	dispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegin, this);
-	dispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
     return true;
 }
