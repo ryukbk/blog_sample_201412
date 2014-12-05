@@ -8,8 +8,9 @@ using namespace cocostudio::timeline;
 Scene* GameScene::createScene()
 {
     // 'scene' is an autorelease object
-    auto scene = Scene::create();
-    
+	auto scene = Scene::createWithPhysics();
+	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+
     // 'layer' is an autorelease object
     auto layer = GameScene::create();
 
@@ -120,6 +121,10 @@ bool GameScene::init()
 	touchListener->onTouchesEnded = CC_CALLBACK_2(GameScene::onTouchesEnded, this);
 	dispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegin, this);
+	dispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
+
     return true;
 }
 
@@ -156,5 +161,11 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, coco
 void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event)
 {
 	
+}
+
+bool GameScene::onContactBegin(const PhysicsContact& contact)
+{
+	CCLOG("onContactBegin");
+	return true;
 }
 

@@ -7,6 +7,10 @@ static const float PLAYER_X_POS = 80.0f;
 static const float PLAYER_SCALE = 5.0f;
 static const float PLAYER_MOVE_SPEED = 200.0f;
 
+static const float PLAYER_GIFTBOX_SCALE = 3.0f;
+
+static const int CONTACT_BIT_MASK = 0x00000001;
+
 class PlayerCharacter : public cocos2d::Node
 {
 private:

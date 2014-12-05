@@ -33,6 +33,13 @@ bool PlayerCharacter::init()
 
 	setScale(PLAYER_SCALE);
 
+	Size originalSize = idleRight->getContentSize();
+	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
+	boxBody->setDynamic(false);
+	boxBody->setRotationEnable(false);
+	boxBody->setContactTestBitmask(CONTACT_BIT_MASK);
+	setPhysicsBody(boxBody);
+
 	return true;
 }
 
@@ -102,7 +109,15 @@ void PlayerCharacter::stayIdle(bool flipped)
 void PlayerCharacter::attack(cocos2d::Node* scene, cocos2d::Touch* touch, cocos2d::SpriteFrameCache* spriteFrameCache, const cocos2d::Size& visibleSize)
 {
 	auto giftbox = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("giftbox.png"));
-	giftbox->setScale(3.0f);
+	giftbox->setScale(PLAYER_GIFTBOX_SCALE);
+
+	Size originalSize = giftbox->getContentSize();
+	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_GIFTBOX_SCALE, originalSize.height * PLAYER_GIFTBOX_SCALE));
+	boxBody->setDynamic(false);
+	boxBody->setRotationEnable(false);
+	boxBody->setContactTestBitmask(CONTACT_BIT_MASK);
+	giftbox->setPhysicsBody(boxBody);
+
 	scene->addChild(giftbox, 0);
 
 	giftbox->setPosition(getPosition());
