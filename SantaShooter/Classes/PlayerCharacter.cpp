@@ -3,6 +3,8 @@
 USING_NS_CC;
 using namespace cocostudio::timeline;
 
+int PlayerCharacter::currentContactBitMask = 0x00000001;
+
 bool PlayerCharacter::init()
 {
 	if (!Node::init())
@@ -37,7 +39,9 @@ bool PlayerCharacter::init()
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
 	boxBody->setDynamic(false);
 	boxBody->setRotationEnable(false);
-	boxBody->setContactTestBitmask(CONTACT_BIT_MASK);
+
+	contactBitMask = getNewContactBitMask();
+	boxBody->setContactTestBitmask(contactBitMask);
 	setPhysicsBody(boxBody);
 
 	return true;
@@ -106,7 +110,13 @@ void PlayerCharacter::stayIdle(bool flipped)
 	idleRight->setVisible(true);
 }
 
-void PlayerCharacter::attack(cocos2d::Node* scene, cocos2d::Touch* touch, cocos2d::SpriteFrameCache* spriteFrameCache, const cocos2d::Size& visibleSize)
+void PlayerCharacter::attack(
+	cocos2d::Node* scene,
+	cocos2d::Touch* touch,
+	cocos2d::SpriteFrameCache* spriteFrameCache,
+	const cocos2d::Size& visibleSize,
+	int targetContactBitMask
+)
 {
 	auto giftbox = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("giftbox.png"));
 	giftbox->setScale(PLAYER_GIFTBOX_SCALE);
@@ -115,8 +125,10 @@ void PlayerCharacter::attack(cocos2d::Node* scene, cocos2d::Touch* touch, cocos2
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_GIFTBOX_SCALE, originalSize.height * PLAYER_GIFTBOX_SCALE));
 	// If setDynamic(false) collision is not detected
 	boxBody->setRotationEnable(false);
-	boxBody->setContactTestBitmask(CONTACT_BIT_MASK);
+	boxBody->setContactTestBitmask(targetContactBitMask);
 	giftbox->setPhysicsBody(boxBody);
+
+	giftbox->setName("giftbox");
 
 	scene->addChild(giftbox, 0);
 

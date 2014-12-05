@@ -9,7 +9,9 @@ Scene* GameScene::createScene()
 {
     // 'scene' is an autorelease object
 	auto scene = Scene::createWithPhysics();
+#ifndef NDEBUG
 	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+#endif
 
     // 'layer' is an autorelease object
     auto layer = GameScene::create();
@@ -72,17 +74,19 @@ bool GameScene::init()
 
 	player1 = PlayerCharacter::create();
 	player1->setPosition(Vec2(PLAYER_X_POS, visibleSize.height / 2));
-
+	player1->setName("player1");
 	this->addChild(player1);
 
 	player2 = PlayerCharacter::create();
 	player2->setPosition(Vec2(visibleSize.width - PLAYER_X_POS, visibleSize.height / 2));
 	player2->stayIdle(true);
-
+	player2->setName("player2");
 	this->addChild(player2);
 
-	auto listener = EventListenerKeyboard::create();
+	player1->getPhysicsBody()->setCategoryBitmask(~player2->getContactBitMask());
+	player2->getPhysicsBody()->setCategoryBitmask(~player1->getContactBitMask());
 
+	auto listener = EventListenerKeyboard::create();
 	listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_W:
@@ -149,10 +153,10 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, coco
 		Point touchPosition = touch->getLocation();
 		if (touchPosition.x > visibleSize.width / 2) {
 			CCLOG("Player 1 attack");
-			player1->attack(this, touch, spriteFrameCache, visibleSize);
+			player1->attack(this, touch, spriteFrameCache, visibleSize, player2->getContactBitMask());
 		} else {
 			CCLOG("Player 2 attack");
-			player2->attack(this, touch, spriteFrameCache, visibleSize);
+			player2->attack(this, touch, spriteFrameCache, visibleSize, player1->getContactBitMask());
 		}
 	}
 }
@@ -164,7 +168,13 @@ void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, coco
 
 bool GameScene::onContactBegin(const PhysicsContact& contact)
 {
-	CCLOG("onContactBegin");
+	std::string log;
+	log += "onContactBegin: ";
+	log += contact.getShapeA()->getBody()->getNode()->getName();
+	log += " - ";
+	log += contact.getShapeB()->getBody()->getNode()->getName();
+
+	CCLOG(log.c_str());
 	return true;
 }
 
