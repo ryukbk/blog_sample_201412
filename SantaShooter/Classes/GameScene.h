@@ -1,9 +1,12 @@
 #pragma once
 
+#include <vector>
 #include <memory>
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
+
+#include "PlayerCharacter.h"
 
 class GameScene : public cocos2d::Node
 {
@@ -19,5 +22,11 @@ public:
     
     // implement the "static create()" method manually
     CREATE_FUNC(GameScene);
+
+	void onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
+	void onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
+
+	CC_SYNTHESIZE(PlayerCharacter*, player1, Player1);
+	CC_SYNTHESIZE(PlayerCharacter*, player2, Player2);
 };
 

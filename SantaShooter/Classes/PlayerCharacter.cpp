@@ -31,6 +31,8 @@ bool PlayerCharacter::init()
 	walkDown->runAction(walkDownAnimation);
 	walkDown->setVisible(false);
 
+	setScale(PLAYER_SCALE);
+
 	return true;
 }
 
@@ -95,4 +97,27 @@ void PlayerCharacter::stayIdle(bool flipped)
 	}
 
 	idleRight->setVisible(true);
+}
+
+void PlayerCharacter::attack(cocos2d::Node* scene, cocos2d::Touch* touch, cocos2d::SpriteFrameCache* spriteFrameCache, const cocos2d::Size& visibleSize)
+{
+	auto giftbox = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("giftbox.png"));
+	giftbox->setScale(3.0f);
+	scene->addChild(giftbox, 0);
+
+	giftbox->setPosition(getPosition());
+
+	Point start = giftbox->getPosition();
+	Point end = touch->getLocation();
+	float angle = Point(end - start).getAngle();
+
+	end.add(Point(cos(angle) * 200, sin(angle) * 200));
+
+	auto callback = CallFunc::create([giftbox]() {
+		giftbox->removeFromParent();
+	});
+
+	float duration = start.getDistance(end) / 2500;
+	auto sequence = Sequence::create(MoveTo::create(duration, end), callback, NULL);
+	giftbox->runAction(sequence);
 }

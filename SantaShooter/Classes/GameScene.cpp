@@ -69,15 +69,13 @@ bool GameScene::init()
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
 	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
 
-	auto player1 = PlayerCharacter::create();
+	player1 = PlayerCharacter::create();
 	player1->setPosition(Vec2(PLAYER_X_POS, visibleSize.height / 2));
-	player1->setScale(4.0f);
 
 	this->addChild(player1);
 
-	auto player2 = PlayerCharacter::create();
+	player2 = PlayerCharacter::create();
 	player2->setPosition(Vec2(visibleSize.width - PLAYER_X_POS, visibleSize.height / 2));
-	player2->setScale(4.0f);
 	player2->stayIdle(true);
 
 	this->addChild(player2);
@@ -85,7 +83,7 @@ bool GameScene::init()
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
 	auto listener = EventListenerKeyboard::create();
 
-	listener->onKeyPressed = [player1, player2](EventKeyboard::KeyCode keyCode, Event* event) {
+	listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_W:
 			player1->playWalkUp();
@@ -102,7 +100,7 @@ bool GameScene::init()
 		}
 	};
 
-	listener->onKeyReleased = [player1, player2](EventKeyboard::KeyCode keyCode, Event* event) {
+	listener->onKeyReleased = [=](EventKeyboard::KeyCode keyCode, Event* event) {
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_W:
 		case EventKeyboard::KeyCode::KEY_S:
@@ -116,6 +114,11 @@ bool GameScene::init()
 	};
 
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
+	auto touchListener = EventListenerTouchAllAtOnce::create();
+	touchListener->onTouchesBegan = CC_CALLBACK_2(GameScene::onTouchesBegan, this);
+	touchListener->onTouchesEnded = CC_CALLBACK_2(GameScene::onTouchesEnded, this);
+	dispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
     return true;
 }
@@ -133,3 +136,25 @@ void GameScene::menuCloseCallback(Ref* pSender)
     exit(0);
 #endif
 }
+
+void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event)
+{
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	auto spriteFrameCache = SpriteFrameCache::getInstance();
+	for (auto touch: touches) {
+		Point touchPosition = touch->getLocation();
+		if (touchPosition.x > visibleSize.width / 2) {
+			CCLOG("Player 1 attack");
+			player1->attack(this, touch, spriteFrameCache, visibleSize);
+		} else {
+			CCLOG("Player 2 attack");
+			player2->attack(this, touch, spriteFrameCache, visibleSize);
+		}
+	}
+}
+
+void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event)
+{
+	
+}
+
