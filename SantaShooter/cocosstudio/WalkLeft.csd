@@ -3,12 +3,12 @@
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="40" Speed="1.0000">
-        <Timeline ActionTag="873006739" FrameType="VisibleFrame">
+        <Timeline ActionTag="-704515417" FrameType="VisibleFrame">
           <BoolFrame FrameIndex="0" Value="True" />
           <BoolFrame FrameIndex="20" Value="False" />
           <BoolFrame FrameIndex="40" Value="True" />
         </Timeline>
-        <Timeline ActionTag="-1991941268" FrameType="VisibleFrame">
+        <Timeline ActionTag="384170072" FrameType="VisibleFrame">
           <BoolFrame FrameIndex="0" Value="False" />
           <BoolFrame FrameIndex="20" Value="True" />
           <BoolFrame FrameIndex="40" Value="False" />
@@ -23,7 +23,7 @@
         <PrePosition X="0.0000" Y="0.0000" />
         <PreSize X="0.0000" Y="0.0000" />
         <Children>
-          <NodeObjectData Name="slice04_04" ActionTag="873006739" FrameEvent="" Tag="13" ObjectIndex="1" ctype="SpriteObjectData">
+          <NodeObjectData Name="slice04_04" ActionTag="-704515417" FrameEvent="" Tag="8" ObjectIndex="3" ctype="SpriteObjectData">
             <Position X="0.0000" Y="0.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
@@ -31,9 +31,9 @@
             <Size X="18.0000" Y="34.0000" />
             <PrePosition X="0.0000" Y="0.0000" />
             <PreSize X="0.0000" Y="0.0000" />
-            <FileData Type="PlistSubImage" Path="slice04_04.png" Plist="sprites.plist" />
+            <FileData Type="MarkedSubImage" Path="slice04_04.png" Plist="sprites.plist" />
           </NodeObjectData>
-          <NodeObjectData Name="slice09_09" ActionTag="-1991941268" VisibleForFrame="False" FrameEvent="" Tag="14" ObjectIndex="2" ctype="SpriteObjectData">
+          <NodeObjectData Name="slice09_09" ActionTag="384170072" VisibleForFrame="False" FrameEvent="" Tag="9" ObjectIndex="4" ctype="SpriteObjectData">
             <Position X="0.0000" Y="0.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
@@ -41,7 +41,7 @@
             <Size X="17.0000" Y="34.0000" />
             <PrePosition X="0.0000" Y="0.0000" />
             <PreSize X="0.0000" Y="0.0000" />
-            <FileData Type="PlistSubImage" Path="slice09_09.png" Plist="sprites.plist" />
+            <FileData Type="MarkedSubImage" Path="slice09_09.png" Plist="sprites.plist" />
           </NodeObjectData>
         </Children>
       </ObjectData>

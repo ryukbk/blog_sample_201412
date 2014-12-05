@@ -3,24 +3,24 @@
   <SolutionFolder>
     <Group ctype="ResourceGroup">
       <RootFolder Name=".">
-        <PlistImageFolder PListFile="sprites.plist" LastPlistWriteTime="2014-12-03T16:42:25.0286503+09:00" LastImageWriteTime="2014-12-03T16:42:25.0306505+09:00" Name=".sprites_PList.Dir">
-          <PlistImageFile Name="slice01_01.png" Key="slice01_01.png" />
-          <PlistImageFile Name="slice02_02.png" Key="slice02_02.png" />
-          <PlistImageFile Name="slice03_03.png" Key="slice03_03.png" />
-          <PlistImageFile Name="slice04_04.png" Key="slice04_04.png" />
-          <PlistImageFile Name="slice05_05.png" Key="slice05_05.png" />
-          <PlistImageFile Name="slice06_06.png" Key="slice06_06.png" />
-          <PlistImageFile Name="slice07_07.png" Key="slice07_07.png" />
-          <PlistImageFile Name="slice08_08.png" Key="slice08_08.png" />
-          <PlistImageFile Name="slice09_09.png" Key="slice09_09.png" />
-          <PlistImageFile Name="slice10_10.png" Key="slice10_10.png" />
-          <PlistImageFile Name="slice11_11.png" Key="slice11_11.png" />
-          <PlistImageFile Name="slice12_12.png" Key="slice12_12.png" />
-        </PlistImageFolder>
         <Project Name="WalkDown.csd" />
         <Project Name="WalkUp.csd" />
         <Project Name="WalkLeft.csd" />
         <Project Name="WalkRight.csd" />
+        <Image Name="giftbox.png" />
+        <Image Name="slice01_01.png" />
+        <Image Name="slice02_02.png" />
+        <Image Name="slice03_03.png" />
+        <Image Name="slice04_04.png" />
+        <Image Name="slice05_05.png" />
+        <Image Name="slice06_06.png" />
+        <Image Name="slice07_07.png" />
+        <Image Name="slice08_08.png" />
+        <Image Name="slice09_09.png" />
+        <Image Name="slice10_10.png" />
+        <Image Name="slice11_11.png" />
+        <Image Name="slice12_12.png" />
+        <PlistInfo Name="sprites.csi" />
       </RootFolder>
     </Group>
   </SolutionFolder>

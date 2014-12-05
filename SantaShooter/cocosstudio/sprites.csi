@@ -1,0 +1,21 @@
+<PlistInfoProjectFile>
+  <PropertyGroup Type="Plist" Name="sprites" ID="75ff0e6e-2207-4faf-a252-35552db11b40" Version="2.0.2.0" />
+  <Content ExportType="Png" SortAlgorithm="MaxRects" PicturePadding="0" AllowRotation="True" AllowAnySize="False" AllowTrim="False" ctype="PlistInfoData">
+    <ImageFiles>
+      <FilePathData Path="giftbox.png" />
+      <FilePathData Path="slice01_01.png" />
+      <FilePathData Path="slice02_02.png" />
+      <FilePathData Path="slice03_03.png" />
+      <FilePathData Path="slice04_04.png" />
+      <FilePathData Path="slice05_05.png" />
+      <FilePathData Path="slice06_06.png" />
+      <FilePathData Path="slice07_07.png" />
+      <FilePathData Path="slice08_08.png" />
+      <FilePathData Path="slice09_09.png" />
+      <FilePathData Path="slice10_10.png" />
+      <FilePathData Path="slice11_11.png" />
+      <FilePathData Path="slice12_12.png" />
+    </ImageFiles>
+    <MaxSize Width="256" Height="256" />
+  </Content>
+</PlistInfoProjectFile>
