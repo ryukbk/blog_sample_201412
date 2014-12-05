@@ -62,7 +62,7 @@ void PlayerCharacter::playWalkUp()
 	walkDown->setVisible(false);
 
 	walkUp->setVisible(true);
-	walkUpAnimation->gotoFrameAndPlay(0, 40, true);
+	walkUpAnimation->gotoFrameAndPlay(0, true);
 
 	Move(true);
 }
@@ -76,7 +76,7 @@ void PlayerCharacter::playWalkDown()
 	walkUp->setVisible(false);
 
 	walkDown->setVisible(true);
-	walkDownAnimation->gotoFrameAndPlay(0, 40, true);
+	walkDownAnimation->gotoFrameAndPlay(0, true);
 
 	Move(false);
 }
@@ -111,7 +111,7 @@ void PlayerCharacter::attack(cocos2d::Node* scene, cocos2d::Touch* touch, cocos2
 	Point end = touch->getLocation();
 	float angle = Point(end - start).getAngle();
 
-	end.add(Point(cos(angle) * 200, sin(angle) * 200));
+	end.add(Point(cos(angle) * 300, sin(angle) * 300));
 
 	auto callback = CallFunc::create([giftbox]() {
 		giftbox->removeFromParent();
