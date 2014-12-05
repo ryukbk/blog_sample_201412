@@ -24,3 +24,4 @@ proj.win32/SantaShooter.v12.suo
 # Misc
 build/
 /cocos2d
+.DS_Store
