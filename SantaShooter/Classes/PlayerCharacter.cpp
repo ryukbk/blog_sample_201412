@@ -45,6 +45,8 @@ bool PlayerCharacter::init()
 	boxBody->setContactTestBitmask(contactBitMask);
 	setPhysicsBody(boxBody);
 
+	schedule(CC_SCHEDULE_SELECTOR(PlayerCharacter::cleanupGiftbox), 3.0f);
+
 	return true;
 }
 
@@ -54,7 +56,7 @@ PlayerCharacter::~PlayerCharacter()
 	walkDownAnimation->release();
 }
 
-void PlayerCharacter::Move(bool up)
+void PlayerCharacter::move(bool up)
 {
 #ifdef MOVE_WITH_PHYSICS
 	this->getPhysicsBody()->setVelocity(Vec2(0, up ? PLAYER_MOVE_SPEED_WITH_PHYSICS : - PLAYER_MOVE_SPEED_WITH_PHYSICS));
@@ -80,7 +82,7 @@ void PlayerCharacter::playWalkUp()
 	walkUp->setVisible(true);
 	walkUpAnimation->gotoFrameAndPlay(0, true);
 
-	Move(true);
+	move(true);
 }
 
 void PlayerCharacter::playWalkDown()
@@ -94,7 +96,7 @@ void PlayerCharacter::playWalkDown()
 	walkDown->setVisible(true);
 	walkDownAnimation->gotoFrameAndPlay(0, true);
 
-	Move(false);
+	move(false);
 }
 
 void PlayerCharacter::stayIdle(bool flipped)
@@ -168,4 +170,21 @@ void PlayerCharacter::attack(
 	auto sequence = Sequence::create(MoveTo::create(duration, end), callback, NULL);
 	giftbox->runAction(sequence);
 #endif
+
+	giftboxes.push_back(giftbox);
+}
+
+void PlayerCharacter::cleanupGiftbox(float deltaTime)
+{
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [visibleSize](Node* giftbox)
+	{
+		Point pos = giftbox->getPosition();
+		bool offscreen = (pos.x > visibleSize.width || pos.x < 0 || pos.y < 0 || pos.y > visibleSize.height);
+		if (offscreen) {
+			giftbox->removeFromParent();
+		}
+
+		return offscreen;
+	}), giftboxes.end());
 }

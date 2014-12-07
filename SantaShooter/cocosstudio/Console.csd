@@ -12,7 +12,7 @@
         <PrePosition X="0.0000" Y="0.0000" />
         <PreSize X="0.0000" Y="0.0000" />
         <Children>
-          <NodeObjectData Name="IPAddress" ActionTag="-1455315711" FrameEvent="" Tag="3" ObjectIndex="1" TouchEnable="True" IsCustomSize="True" FontSize="20" LabelText="" PlaceHolderText="127.0.0.1:8080" MaxLengthText="10" ctype="TextFieldObjectData">
+          <NodeObjectData Name="IPAddress" ActionTag="-1455315711" FrameEvent="" Tag="3" ObjectIndex="1" TouchEnable="True" IsCustomSize="True" FontSize="20" LabelText="" PlaceHolderText="127.0.0.1:31337" MaxLengthText="10" ctype="TextFieldObjectData">
             <Position X="0.0000" Y="0.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />

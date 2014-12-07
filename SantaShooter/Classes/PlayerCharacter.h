@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <list>
+#include <algorithm>
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
@@ -19,7 +21,9 @@ static const float PLAYER_GIFTBOX_SPEED_WITH_PHYSICS = 600.0f;
 class PlayerCharacter : public cocos2d::Node
 {
 private:
-	void Move(bool up);
+	std::list<cocos2d::Node*> giftboxes;
+
+	void move(bool up);
 
 	static int currentContactBitMask;
 	static int getNewContactBitMask()
@@ -37,6 +41,8 @@ public:
 	CREATE_FUNC(PlayerCharacter);
 
 	virtual ~PlayerCharacter();
+
+	void cleanupGiftbox(float deltaTime);
 
 	CC_SYNTHESIZE(cocos2d::Node*, walkUp, WalkUp);
 	CC_SYNTHESIZE(cocos2d::Node*, walkDown, WalkDown);
