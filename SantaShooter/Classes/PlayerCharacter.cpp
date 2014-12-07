@@ -37,7 +37,6 @@ bool PlayerCharacter::init()
 
 	Size originalSize = idleRight->getContentSize();
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
-	boxBody->setDynamic(false);
 	boxBody->setRotationEnable(false);
 
 	contactBitMask = getNewContactBitMask();
@@ -55,13 +54,17 @@ PlayerCharacter::~PlayerCharacter()
 
 void PlayerCharacter::Move(bool up)
 {
+#ifdef MOVE_WITH_PHYSICS
+	this->getPhysicsBody()->setVelocity(Vec2(0, up ? PLAYER_MOVE_SPEED_WITH_PHYSICS : - PLAYER_MOVE_SPEED_WITH_PHYSICS));
+#else
 	this->stopAllActions();
 
 	Point start = this->getPosition();
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point end(start.x, up ? visibleSize.height : 0);
-	float duration = start.getDistance(end) / PLAYER_MOVE_SPEED;
+	float duration = start.getDistance(end) / PLAYER_MOVE_SPEED_WITHOUT_PHYSICS;
 	this->runAction(MoveTo::create(duration, end));
+#endif
 }
 
 void PlayerCharacter::playWalkUp()
@@ -94,6 +97,10 @@ void PlayerCharacter::playWalkDown()
 
 void PlayerCharacter::stayIdle(bool flipped)
 {
+#ifdef MOVE_WITH_PHYSICS
+	this->getPhysicsBody()->setVelocity(Vec2::ZERO);
+#endif
+
 	this->stopAllActions();
 
 	walkUpAnimation->pause();
@@ -130,12 +137,19 @@ void PlayerCharacter::attack(
 
 	giftbox->setName("giftbox");
 
+	Point start = getPosition();
+	Point end = touch->getLocation();
+	
+	if (end.x > visibleSize.width / 2) {
+		start.x += 100.0f;
+	} else {
+		start.x -= 100.0f;
+	}
+
+	giftbox->setPosition(start);
+
 	scene->addChild(giftbox, 0);
 
-	giftbox->setPosition(getPosition());
-
-	Point start = giftbox->getPosition();
-	Point end = touch->getLocation();
 	float angle = Point(end - start).getAngle();
 
 	end.add(Point(cos(angle) * 300, sin(angle) * 300));
@@ -144,7 +158,7 @@ void PlayerCharacter::attack(
 		giftbox->removeFromParent();
 	});
 
-	float duration = start.getDistance(end) / 2500;
+	float duration = start.getDistance(end) / PLAYER_GIFTBOX_SPEED_WITHOUT_PHYSICS;
 	auto sequence = Sequence::create(MoveTo::create(duration, end), callback, NULL);
 	giftbox->runAction(sequence);
 }

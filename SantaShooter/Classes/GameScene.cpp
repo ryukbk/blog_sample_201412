@@ -13,6 +13,8 @@ Scene* GameScene::createScene()
 	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 #endif
 
+	scene->getPhysicsWorld()->setGravity(Vec2::ZERO);
+
     // 'layer' is an autorelease object
     auto layer = GameScene::create();
 
