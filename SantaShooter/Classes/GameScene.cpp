@@ -4,6 +4,7 @@
 USING_NS_CC;
 
 using namespace cocostudio::timeline;
+using namespace cocos2d::ui;
 
 Scene* GameScene::createScene()
 {
@@ -70,6 +71,13 @@ bool GameScene::init()
 
     // add the label as a child to this layer
     this->addChild(label, 1);
+
+	auto console = CSLoader::createNode("Console.csb");
+	this->addChild(console, 0, "Console");
+	console->setPosition(Point(100, 100));
+
+	auto connectButton = dynamic_cast<Button*>(console->getChildByName("ConnectButton"));
+	connectButton->addTouchEventListener(this, static_cast<SEL_TouchEvent>(&GameScene::onConnectButtonPressed));
 
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
 	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
@@ -178,5 +186,18 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 
 	CCLOG(log.c_str());
 	return true;
+}
+
+void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
+{
+	switch (type) {
+	case TouchEventType::TOUCH_EVENT_BEGAN:
+		auto parent = dynamic_cast<Button*>(pSender)->getParent();
+		auto ipAddress = dynamic_cast<TextField*>(parent->getChildByName("IPAddress"));
+		std::string s("Connecting to ");
+		s += ipAddress->getString();
+		CCLOG(s.c_str());
+		break;
+	}
 }
 

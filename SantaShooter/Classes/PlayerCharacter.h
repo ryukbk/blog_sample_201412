@@ -9,12 +9,12 @@
 
 static const float PLAYER_X_POS = 80.0f;
 static const float PLAYER_SCALE = 5.0f;
-static const float PLAYER_MOVE_SPEED_WITH_PHYSICS = 50.0f;
+static const float PLAYER_MOVE_SPEED_WITH_PHYSICS = 200.0f;
 static const float PLAYER_MOVE_SPEED_WITHOUT_PHYSICS = 200.0f;
 
 static const float PLAYER_GIFTBOX_SCALE = 3.0f;
 static const float PLAYER_GIFTBOX_SPEED_WITHOUT_PHYSICS = 2500.0f;
-
+static const float PLAYER_GIFTBOX_SPEED_WITH_PHYSICS = 600.0f;
 
 class PlayerCharacter : public cocos2d::Node
 {

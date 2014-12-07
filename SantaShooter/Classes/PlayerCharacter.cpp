@@ -37,7 +37,9 @@ bool PlayerCharacter::init()
 
 	Size originalSize = idleRight->getContentSize();
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
+	boxBody->setDynamic(true);
 	boxBody->setRotationEnable(false);
+	boxBody->setMass(PHYSICS_INFINITY);
 
 	contactBitMask = getNewContactBitMask();
 	boxBody->setContactTestBitmask(contactBitMask);
@@ -131,6 +133,7 @@ void PlayerCharacter::attack(
 	Size originalSize = giftbox->getContentSize();
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_GIFTBOX_SCALE, originalSize.height * PLAYER_GIFTBOX_SCALE));
 	// If setDynamic(false) collision is not detected
+	boxBody->setDynamic(true);
 	boxBody->setRotationEnable(false);
 	boxBody->setContactTestBitmask(targetContactBitMask);
 	giftbox->setPhysicsBody(boxBody);
@@ -152,6 +155,9 @@ void PlayerCharacter::attack(
 
 	float angle = Point(end - start).getAngle();
 
+#ifdef MOVE_WITH_PHYSICS
+	giftbox->getPhysicsBody()->setVelocity(Vec2(cos(angle) * PLAYER_GIFTBOX_SPEED_WITH_PHYSICS, sin(angle) * PLAYER_GIFTBOX_SPEED_WITH_PHYSICS));
+#else
 	end.add(Point(cos(angle) * 300, sin(angle) * 300));
 
 	auto callback = CallFunc::create([giftbox]() {
@@ -161,4 +167,5 @@ void PlayerCharacter::attack(
 	float duration = start.getDistance(end) / PLAYER_GIFTBOX_SPEED_WITHOUT_PHYSICS;
 	auto sequence = Sequence::create(MoveTo::create(duration, end), callback, NULL);
 	giftbox->runAction(sequence);
+#endif
 }

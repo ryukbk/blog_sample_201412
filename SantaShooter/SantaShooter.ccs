@@ -21,6 +21,8 @@
         <Image Name="slice11_11.png" />
         <Image Name="slice12_12.png" />
         <PlistInfo Name="sprites.csi" />
+        <Project Name="Console.csd" />
+        <File Name="Marker Felt.ttf" />
       </RootFolder>
     </Group>
   </SolutionFolder>
