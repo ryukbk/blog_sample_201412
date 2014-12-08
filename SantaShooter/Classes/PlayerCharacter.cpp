@@ -45,7 +45,7 @@ bool PlayerCharacter::init()
 	boxBody->setContactTestBitmask(contactBitMask);
 	setPhysicsBody(boxBody);
 
-	schedule(CC_SCHEDULE_SELECTOR(PlayerCharacter::cleanupGiftbox), 3.0f);
+	schedule(CC_SCHEDULE_SELECTOR(PlayerCharacter::cleanupGiftbox), 2.0f);
 
 	return true;
 }
@@ -137,6 +137,7 @@ void PlayerCharacter::attack(
 	// If setDynamic(false) collision is not detected
 	boxBody->setDynamic(true);
 	boxBody->setRotationEnable(false);
+	boxBody->setCollisionBitmask(0);
 	boxBody->setContactTestBitmask(targetContactBitMask);
 	giftbox->setPhysicsBody(boxBody);
 
