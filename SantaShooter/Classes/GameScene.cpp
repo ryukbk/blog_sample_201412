@@ -193,11 +193,54 @@ void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
 	switch (type) {
 	case TouchEventType::TOUCH_EVENT_BEGAN:
 		auto parent = dynamic_cast<Button*>(pSender)->getParent();
-		auto ipAddress = dynamic_cast<TextField*>(parent->getChildByName("IPAddress"));
-		std::string s("Connecting to ");
-		s += ipAddress->getString();
-		CCLOG(s.c_str());
+		auto ipAddressBox = dynamic_cast<TextField*>(parent->getChildByName("IPAddress"));
+		std::string a = ipAddressBox->getString();
+		std::string::size_type index = a.find_first_of(":");
+		std::string port = "31337";
+		std::string ipAddress = "127.0.0.1";
+		if (index != std::string::npos) {
+			ipAddress = a.substr(0, index);
+			port = a.substr(index + 1);
+		}
+
+		std::string finalDest = "ws://";
+		finalDest += ipAddress;
+		finalDest += ':';
+		finalDest += port;
+
+		//std::string s("Connecting to ");
+		//s += ipAddress->getString();
+
+		if (websocket == nullptr) {
+			websocket = new network::WebSocket();
+		}
+
+		std::string log = "Connecting to ";
+		log += finalDest;
+		CCLOG(log.c_str());
+
+		websocket->init(*this, finalDest);
 		break;
 	}
+}
+
+void GameScene::onOpen(cocos2d::network::WebSocket* ws)
+{
+	CCLOG("websocket open");
+}
+
+void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::Data& data)
+{
+
+}
+
+void GameScene::onClose(cocos2d::network::WebSocket* ws)
+{
+
+}
+
+void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::ErrorCode& error)
+{
+	CCLOG("websocket error code: %d", error);
 }
 

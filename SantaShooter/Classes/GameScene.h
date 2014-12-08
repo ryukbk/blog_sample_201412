@@ -6,11 +6,15 @@
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
 #include "ui/CocosGUI.h"
+#include "network/WebSocket.h"
 
 #include "PlayerCharacter.h"
 
-class GameScene : public cocos2d::Node
+class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
+private:
+	cocos2d::network::WebSocket* websocket = nullptr;
+
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::Scene* createScene();
@@ -23,6 +27,11 @@ public:
     
     // implement the "static create()" method manually
     CREATE_FUNC(GameScene);
+
+	virtual void onOpen(cocos2d::network::WebSocket* ws);
+	virtual void onMessage(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::Data& data);
+	virtual void onClose(cocos2d::network::WebSocket* ws);
+	virtual void onError(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::ErrorCode& error);
 
 	void onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
 	void onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
