@@ -27,10 +27,10 @@ Scene* GameScene::createScene()
 // on "init" you need to initialize your instance
 bool GameScene::init()
 {
-    if ( !Node::init() )
-    {
-        return false;
-    }
+	if ( !Node::init() )
+	{
+		return false;
+	}
 
 	this->scheduleUpdate();
 
@@ -39,18 +39,15 @@ bool GameScene::init()
 		return true;
 	}
 
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    auto closeItem = MenuItemImage::create("CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(GameScene::menuCloseCallback, this));
-    
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2,
-                                origin.y + closeItem->getContentSize().height/2));
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	auto closeItem = MenuItemImage::create("CloseNormal.png", "CloseSelected.png", CC_CALLBACK_1(GameScene::menuCloseCallback, this));
 
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
+	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2, origin.y + closeItem->getContentSize().height/2));
+
+	auto menu = Menu::create(closeItem, NULL);
+	menu->setPosition(Vec2::ZERO);
+	this->addChild(menu, 1);
 
 	auto console = CSLoader::createNode("Console.csb");
 	this->addChild(console, 0, "Console");
@@ -59,12 +56,18 @@ bool GameScene::init()
 	auto connectButton = dynamic_cast<Button*>(console->getChildByName("ConnectButton"));
 	connectButton->addTouchEventListener(std::bind(&GameScene::onConnectButtonPressed, this, std::placeholders::_1, std::placeholders::_2));
 
+	return true;
+}
+
+void GameScene::setupPlayers()
+{
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
 	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
 
 	player1 = PlayerCharacter::create();
 	player1->addPhysics();
 
+	Size visibleSize = Director::getInstance()->getVisibleSize();
 	player1->setPosition(Vec2(PLAYER_X_POS, visibleSize.height / 2));
 	player1->setName("player1");
 	this->addChild(player1);
@@ -121,8 +124,6 @@ bool GameScene::init()
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegin, this);
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-
-    return true;
 }
 
 void GameScene::update(float deltaTime)
@@ -186,13 +187,25 @@ void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, coco
 
 bool GameScene::onContactBegin(const PhysicsContact& contact)
 {
+	std::string nameA = contact.getShapeA()->getBody()->getNode()->getName();
+	std::string nameB = contact.getShapeB()->getBody()->getNode()->getName();
+
 	std::string log;
 	log += "onContactBegin: ";
-	log += contact.getShapeA()->getBody()->getNode()->getName();
+	log += nameA;
 	log += " - ";
-	log += contact.getShapeB()->getBody()->getNode()->getName();
+	log += nameB;
 
 	CCLOG(log.c_str());
+
+	if ((nameA == "giftbox" && nameB == "player2") || (nameB == "giftbox" && nameA == "player2")) {
+		score1 += 10;
+		updateScore();
+	} else if ((nameA == "giftbox" && nameB == "player1") || (nameB == "giftbox" && nameA == "player1")) {
+		score2 += 10;
+		updateScore();
+	}
+
 	return true;
 }
 
@@ -260,7 +273,12 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		switch (mnemonic) {
 		case 0:
 			role = Role(json["role"].GetInt());
-			if (role != Role::SERVER) {
+
+			updateStatus();
+
+			if (role == Role::SERVER) {
+				setupPlayers();
+			} else {
 				sendPing();
 			}
 			break;
@@ -292,6 +310,38 @@ void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network:
 		delete websocket;
 		websocket = nullptr;
 	}
+}
+
+void GameScene::updateStatus()
+{
+	auto status = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("Status"));
+	std::string text("Role: ");
+	if (role == Role::SERVER) {
+		text += " Server";
+	} else if (role == Role::CLIENT1) {
+		text += " Player 1";
+	} else if (role == Role::CLIENT2) {
+		text += " Player 2";
+	}
+
+	text += "\n";
+
+	status->setString(text);
+}
+
+void GameScene::updateScore()
+{
+	auto score1text = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("Score1"));
+	auto score2text = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("Score2"));
+
+	std::stringstream ss1;
+	ss1 << score1;
+
+	score1text->setString(ss1.str());
+
+	std::stringstream ss2;
+	ss2 << score2;
+	score2text->setString(ss2.str());
 }
 
 void GameScene::sendPing()

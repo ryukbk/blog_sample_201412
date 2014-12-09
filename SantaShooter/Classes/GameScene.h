@@ -29,11 +29,18 @@ enum class Role
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
 private:
+	int score1 = 0;
+	int score2 = 0;
+
 	cocos2d::network::WebSocket* websocket = nullptr;
 
 	Role role = Role::UNINITIALIZED;
 	std::deque<std::string> consoleLines;
 	std::chrono::system_clock::time_point startTime;
+
+	void setupPlayers();
+	void updateStatus();
+	void updateScore();
 
 	void addConsoleText(std::string text);
 	void sendPing();
