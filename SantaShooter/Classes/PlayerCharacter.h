@@ -42,8 +42,10 @@ public:
 
 	virtual ~PlayerCharacter();
 
+	void addPhysics();
 	void cleanupGiftbox(float deltaTime);
 
+	CC_SYNTHESIZE(cocos2d::Sprite*, idleRight, IdleRight);
 	CC_SYNTHESIZE(cocos2d::Node*, walkUp, WalkUp);
 	CC_SYNTHESIZE(cocos2d::Node*, walkDown, WalkDown);
 	CC_SYNTHESIZE(cocostudio::timeline::ActionTimeline*, walkUpAnimation, WalkUpAnimation);

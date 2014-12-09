@@ -13,7 +13,7 @@ bool PlayerCharacter::init()
 	}
 
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
-	auto idleRight = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("slice12_12.png"));
+	idleRight = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("slice12_12.png"));
 	this->addChild(idleRight, 0, "IDLE_RIGHT");
 
 	walkUp = CSLoader::createNode("WalkUp.csb");
@@ -35,16 +35,6 @@ bool PlayerCharacter::init()
 
 	setScale(PLAYER_SCALE);
 
-	Size originalSize = idleRight->getContentSize();
-	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
-	boxBody->setDynamic(true);
-	boxBody->setRotationEnable(false);
-	boxBody->setMass(PHYSICS_INFINITY);
-
-	contactBitMask = getNewContactBitMask();
-	boxBody->setContactTestBitmask(contactBitMask);
-	setPhysicsBody(boxBody);
-
 	schedule(CC_SCHEDULE_SELECTOR(PlayerCharacter::cleanupGiftbox), 2.0f);
 
 	return true;
@@ -54,6 +44,19 @@ PlayerCharacter::~PlayerCharacter()
 {
 	walkUpAnimation->release();
 	walkDownAnimation->release();
+}
+
+void PlayerCharacter::addPhysics()
+{
+	Size originalSize = idleRight->getContentSize();
+	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
+	boxBody->setDynamic(true);
+	boxBody->setRotationEnable(false);
+	boxBody->setMass(PHYSICS_INFINITY);
+
+	contactBitMask = getNewContactBitMask();
+	boxBody->setContactTestBitmask(contactBitMask);
+	setPhysicsBody(boxBody);
 }
 
 void PlayerCharacter::move(bool up)
@@ -73,7 +76,6 @@ void PlayerCharacter::move(bool up)
 
 void PlayerCharacter::playWalkUp()
 {
-	auto idleRight = this->getChildByName("IDLE_RIGHT");
 	idleRight->setVisible(false);
 
 	walkDownAnimation->pause();
@@ -87,7 +89,6 @@ void PlayerCharacter::playWalkUp()
 
 void PlayerCharacter::playWalkDown()
 {
-	auto idleRight = this->getChildByName("IDLE_RIGHT");
 	idleRight->setVisible(false);
 
 	walkUpAnimation->pause();
@@ -113,7 +114,6 @@ void PlayerCharacter::stayIdle(bool flipped)
 	walkDownAnimation->pause();
 	walkDown->setVisible(false);
 
-	auto idleRight = this->getChildByName("IDLE_RIGHT");
 	if (flipped) {
 		static_cast<Sprite*>(idleRight)->setFlippedX(true);
 	}
