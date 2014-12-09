@@ -1,7 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <memory>
+#include <string>
+#include <sstream>
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
@@ -14,6 +17,9 @@ class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Dele
 {
 private:
 	cocos2d::network::WebSocket* websocket = nullptr;
+
+	std::deque<std::string> consoleLines;
+	void addConsoleText(std::string text);
 
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer

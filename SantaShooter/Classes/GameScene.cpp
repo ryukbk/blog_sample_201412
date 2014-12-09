@@ -152,6 +152,25 @@ void GameScene::update(float deltaTime)
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
 }
 
+void GameScene::addConsoleText(std::string text)
+{
+	CCLOG(text.c_str());
+
+	consoleLines.push_back(text);
+	if (consoleLines.size() > 8) {
+		consoleLines.pop_front();
+	}
+
+	auto textBox = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("ConsoleLines"));
+	std::string finalText;
+	for (auto line: consoleLines) {
+		finalText += line;
+		finalText += "\n";
+	}
+
+	textBox->setText(finalText);
+}
+
 void GameScene::menuCloseCallback(Ref* pSender)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
@@ -201,6 +220,10 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 
 void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
 {
+	if (websocket != nullptr) {
+		return;
+	}
+
 	switch (type) {
 	case TouchEventType::TOUCH_EVENT_BEGAN:
 		auto parent = dynamic_cast<Button*>(pSender)->getParent();
@@ -228,7 +251,8 @@ void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
 
 		std::string log = "Connecting to ";
 		log += finalDest;
-		CCLOG(log.c_str());
+
+		addConsoleText(log);
 
 		websocket->init(*this, finalDest);
 		break;
@@ -237,7 +261,7 @@ void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
 
 void GameScene::onOpen(cocos2d::network::WebSocket* ws)
 {
-	CCLOG("websocket open");
+	addConsoleText("websocket open");
 }
 
 void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::Data& data)
@@ -252,6 +276,14 @@ void GameScene::onClose(cocos2d::network::WebSocket* ws)
 
 void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::ErrorCode& error)
 {
-	CCLOG("websocket error code: %d", error);
+	std::string log("websocket error code: ");
+	std::stringstream ss;
+	ss << log << (int)error;
+	addConsoleText(ss.str());
+
+	if (ws == websocket && websocket != nullptr) {
+		delete websocket;
+		websocket = nullptr;
+	}
 }
 
