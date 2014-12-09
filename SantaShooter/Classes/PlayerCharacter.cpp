@@ -62,7 +62,9 @@ void PlayerCharacter::addPhysics()
 void PlayerCharacter::move(bool up)
 {
 #ifdef MOVE_WITH_PHYSICS
-	this->getPhysicsBody()->setVelocity(Vec2(0, up ? PLAYER_MOVE_SPEED_WITH_PHYSICS : - PLAYER_MOVE_SPEED_WITH_PHYSICS));
+	if (this->getPhysicsBody() != nullptr) {
+		this->getPhysicsBody()->setVelocity(Vec2(0, up ? PLAYER_MOVE_SPEED_WITH_PHYSICS : - PLAYER_MOVE_SPEED_WITH_PHYSICS));
+	}
 #else
 	this->stopAllActions();
 
@@ -103,7 +105,9 @@ void PlayerCharacter::playWalkDown()
 void PlayerCharacter::stayIdle(bool flipped)
 {
 #ifdef MOVE_WITH_PHYSICS
-	this->getPhysicsBody()->setVelocity(Vec2::ZERO);
+	if (this->getPhysicsBody() != nullptr) {
+		this->getPhysicsBody()->setVelocity(Vec2::ZERO);
+	}
 #endif
 
 	this->stopAllActions();
