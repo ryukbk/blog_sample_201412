@@ -287,8 +287,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			}
 			break;
 		case Opcode::PONG:
-
-			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime);
+			pingTime = std::chrono::duration_cast< std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime).count();
 			updateStatus();
 			break;
 		}
@@ -333,7 +332,7 @@ void GameScene::updateStatus()
 	text += "\n";
 
 	std::stringstream ss;
-	ss << pingTime.count();
+	ss << pingTime;
 
 	text += "Ping: ";
 	text += ss.str();

@@ -18,6 +18,8 @@
 
 #include "PlayerCharacter.h"
 
+#include <time.h>
+
 enum class Role
 {
 	UNINITIALIZED = 0,
@@ -43,8 +45,8 @@ private:
 
 	Role role = Role::UNINITIALIZED;
 	std::deque<std::string> consoleLines;
-	std::chrono::system_clock::time_point pingStartTime;
-	std::chrono::system_clock::duration pingTime;
+	std::chrono::high_resolution_clock::time_point pingStartTime;
+	long long pingTime;
 
 	void setupPlayers();
 	void updateStatus();
