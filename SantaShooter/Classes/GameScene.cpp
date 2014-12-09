@@ -10,67 +10,47 @@ Scene* GameScene::createScene()
 {
     // 'scene' is an autorelease object
 	auto scene = Scene::createWithPhysics();
+	auto physicsWorld = scene->getPhysicsWorld();
+
 #ifndef NDEBUG
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	physicsWorld->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 #endif
 
-	scene->getPhysicsWorld()->setGravity(Vec2::ZERO);
+	physicsWorld->setAutoStep(false);
+	physicsWorld->setGravity(Vec2::ZERO);
 
-    // 'layer' is an autorelease object
-    auto layer = GameScene::create();
+	scene->addChild(GameScene::create());
 
-    // add layer as a child to scene
-    scene->addChild(layer);
-
-    // return the scene
     return scene;
 }
 
 // on "init" you need to initialize your instance
 bool GameScene::init()
 {
-    //////////////////////////////
-    // 1. super init first
     if ( !Node::init() )
     {
         return false;
     }
-    
+
+	this->scheduleUpdate();
+
+	std::string fullPath = FileUtils::getInstance()->fullPathForFilename("CloseNormal.png");
+	if (!FileUtils::getInstance()->isFileExist(fullPath)) {
+		return true;
+	}
+
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
+    auto closeItem = MenuItemImage::create("CloseNormal.png",
                                            "CloseSelected.png",
                                            CC_CALLBACK_1(GameScene::menuCloseCallback, this));
     
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
+	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2,
                                 origin.y + closeItem->getContentSize().height/2));
 
-    // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    auto label = Label::createWithTTF("Santa Shooter", "fonts/Marker Felt.ttf", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
-
-    // add the label as a child to this layer
-    this->addChild(label, 1);
 
 	auto console = CSLoader::createNode("Console.csb");
 	this->addChild(console, 0, "Console");
@@ -141,6 +121,30 @@ bool GameScene::init()
     return true;
 }
 
+void GameScene::update(float deltaTime)
+{
+	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
+}
+
+void GameScene::addConsoleText(std::string text)
+{
+	CCLOG(text.c_str());
+
+	consoleLines.push_back(text);
+	if (consoleLines.size() > 8) {
+		consoleLines.pop_front();
+	}
+
+	auto textBox = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("ConsoleLines"));
+	std::string finalText;
+	for (auto line: consoleLines) {
+		finalText += line;
+		finalText += "\n";
+	}
+
+	textBox->setText(finalText);
+}
+
 void GameScene::menuCloseCallback(Ref* pSender)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
@@ -190,6 +194,10 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 
 void GameScene::onConnectButtonPressed(Ref* pSender, cocos2d::ui::Widget::TouchEventType type)
 {
+	if (websocket != nullptr) {
+		return;
+	}
+
 	switch (type) {
 	case cocos2d::ui::Widget::TouchEventType::BEGAN:
 		auto parent = dynamic_cast<Button*>(pSender)->getParent();
@@ -215,7 +223,7 @@ void GameScene::onConnectButtonPressed(Ref* pSender, cocos2d::ui::Widget::TouchE
 		std::string log = "Connecting to ";
 		log += finalDest;
 
-		CCLOG(log.c_str());
+		addConsoleText(log);
 
 		websocket->init(*this, finalDest);
 		break;
@@ -224,25 +232,58 @@ void GameScene::onConnectButtonPressed(Ref* pSender, cocos2d::ui::Widget::TouchE
 
 void GameScene::onOpen(cocos2d::network::WebSocket* ws)
 {
-	CCLOG("websocket open");
+	addConsoleText("websocket open");
 }
 
 void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::Data& data)
 {
+	if (ws == websocket) {
+		rapidjson::Document json;
+		json.Parse<0>(data.bytes);
+		if (json.HasParseError())
+		{
+			CCLOG("GetParseError %s\n", json.GetParseError());
 
+			std::string log("GetParseError: ");
+			log += json.GetParseError();
+			log += " ";
+			log += data.bytes;
+			addConsoleText(log);
+			return;
+		}
+
+		auto mnemonic = json["m"].GetInt();
+		switch (mnemonic) {
+		case 0:
+
+			break;
+		case 1:
+
+			break;
+		}
+	}
 }
 
 void GameScene::onClose(cocos2d::network::WebSocket* ws)
 {
+	addConsoleText("websocket close");
 
+	if (ws == websocket && websocket != nullptr) {
+		delete websocket;
+		websocket = nullptr;
+	}
 }
 
 void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::ErrorCode& error)
 {
-	CCLOG("websocket error code: %d", error);
-    if (websocket != nullptr) {
-        delete websocket;
-        websocket = nullptr;
-    }
+	std::string log("websocket error code: ");
+	std::stringstream ss;
+	ss << log << (int)error;
+	addConsoleText(ss.str());
+
+	if (ws == websocket && websocket != nullptr) {
+		delete websocket;
+		websocket = nullptr;
+	}
 }
 

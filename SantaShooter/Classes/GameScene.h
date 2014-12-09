@@ -1,12 +1,19 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <memory>
+#include <string>
+#include <sstream>
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
 #include "ui/CocosGUI.h"
 #include "network/WebSocket.h"
+
+#include "../external/json/document.h"
+#include "../external/json/writer.h"
+#include "../external/json/stringbuffer.h"
 
 #include "PlayerCharacter.h"
 
@@ -15,6 +22,9 @@ class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Dele
 private:
 	cocos2d::network::WebSocket* websocket = nullptr;
 
+	std::deque<std::string> consoleLines;
+	void addConsoleText(std::string text);
+
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::Scene* createScene();
@@ -22,6 +32,8 @@ public:
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();
     
+	virtual void update(float deltaTime);
+
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
     
