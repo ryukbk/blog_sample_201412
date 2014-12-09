@@ -10,11 +10,15 @@ Scene* GameScene::createScene()
 {
     // 'scene' is an autorelease object
 	auto scene = Scene::createWithPhysics();
+	auto physicsWorld = scene->getPhysicsWorld();
+
 #ifndef NDEBUG
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	physicsWorld->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 #endif
 
-	scene->getPhysicsWorld()->setGravity(Vec2::ZERO);
+	physicsWorld->setAutoStep(false);
+
+	physicsWorld->setGravity(Vec2::ZERO);
 
     // 'layer' is an autorelease object
     auto layer = GameScene::create();
@@ -35,7 +39,9 @@ bool GameScene::init()
     {
         return false;
     }
-    
+
+	this->scheduleUpdate();
+
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -139,6 +145,11 @@ bool GameScene::init()
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
     return true;
+}
+
+void GameScene::update(float deltaTime)
+{
+	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
 }
 
 void GameScene::menuCloseCallback(Ref* pSender)
