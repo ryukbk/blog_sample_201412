@@ -9,15 +9,15 @@ wss.on('connection', function(ws) {
 	if (wss.clients.length == 1) {
 		console.log("Server connected");
 		ws.name = "Server";
-		ws.send(JSON.stringify({m: 0, role: 0}));
+		ws.send(JSON.stringify({m: 0, role: 1}));
 	} else if (wss.clients.length == 2) {
 		console.log("Player 1 connected");
 		ws.name = "Player 1";
-		ws.send(JSON.stringify({m: 0, role: 1}));
+		ws.send(JSON.stringify({m: 0, role: 2}));
 	} else if (wss.clients.length == 3) {
 		console.log("Player 2 connected");
 		ws.name = "Player 2";
-		ws.send(JSON.stringify({m: 0, role: 2}));
+		ws.send(JSON.stringify({m: 0, role: 3}));
 	}
 
 	ws.on('message', function(message) {

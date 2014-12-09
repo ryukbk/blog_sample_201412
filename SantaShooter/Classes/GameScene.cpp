@@ -255,7 +255,8 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		auto mnemonic = json["m"].GetInt();
 		switch (mnemonic) {
 		case 0:
-
+			role = Role(json["role"].GetInt());
+			sendPing();
 			break;
 		case 1:
 
@@ -285,5 +286,15 @@ void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network:
 		delete websocket;
 		websocket = nullptr;
 	}
+}
+
+void GameScene::sendPing()
+{
+	if (websocket == nullptr) {
+		return;
+	}
+
+
+
 }
 

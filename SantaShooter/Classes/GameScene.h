@@ -17,13 +17,25 @@
 
 #include "PlayerCharacter.h"
 
+enum class Role
+{
+	UNINITIALIZED = 0,
+	SERVER,
+	CLIENT1,
+	CLIENT2
+};
+
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
 private:
 	cocos2d::network::WebSocket* websocket = nullptr;
 
+	Role role = Role::UNINITIALIZED;
+
 	std::deque<std::string> consoleLines;
 	void addConsoleText(std::string text);
+
+	void sendPing();
 
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
