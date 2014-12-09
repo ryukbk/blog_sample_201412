@@ -26,6 +26,13 @@ enum class Role
 	CLIENT2
 };
 
+enum class Opcode
+{
+	HELLO = 0,
+	PING = 1,
+	PONG = 2,
+};
+
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
 private:
@@ -36,7 +43,8 @@ private:
 
 	Role role = Role::UNINITIALIZED;
 	std::deque<std::string> consoleLines;
-	std::chrono::system_clock::time_point startTime;
+	std::chrono::system_clock::time_point pingStartTime;
+	std::chrono::system_clock::duration pingTime;
 
 	void setupPlayers();
 	void updateStatus();
@@ -44,6 +52,7 @@ private:
 
 	void addConsoleText(std::string text);
 	void sendPing();
+	void sendPong(Role target);
 
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer

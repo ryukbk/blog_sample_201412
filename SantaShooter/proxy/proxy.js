@@ -9,23 +9,25 @@ wss.on('connection', function(ws) {
 	if (wss.clients.length == 1) {
 		console.log("Server connected");
 		ws.name = "Server";
-		ws.send(JSON.stringify({m: 0, role: 1}));
+		ws.send(JSON.stringify({o: 0, role: 1}));
 	} else if (wss.clients.length == 2) {
 		console.log("Player 1 connected");
 		ws.name = "Player 1";
-		ws.send(JSON.stringify({m: 0, role: 2}));
+		ws.send(JSON.stringify({o: 0, role: 2}));
 	} else if (wss.clients.length == 3) {
 		console.log("Player 2 connected");
 		ws.name = "Player 2";
-		ws.send(JSON.stringify({m: 0, role: 3}));
+		ws.send(JSON.stringify({o: 0, role: 3}));
 	}
 
 	ws.on('message', function(message) {
+		console.log(message);
+
 		if (ws === wss.clients[0]) {
 			var json = JSON.parse(message);
-			if (json.d == 0) {
+			if (json.d == 2) {
 				wss.clients[1].send(message);
-			} else if (json.d == 1) {
+			} else if (json.d == 3) {
 				wss.clients[2].send(message);
 			}
 		} else { // client to server

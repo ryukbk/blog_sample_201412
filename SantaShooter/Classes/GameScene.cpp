@@ -8,7 +8,6 @@ using namespace cocos2d::ui;
 
 Scene* GameScene::createScene()
 {
-    // 'scene' is an autorelease object
 	auto scene = Scene::createWithPhysics();
 	auto physicsWorld = scene->getPhysicsWorld();
 
@@ -21,10 +20,9 @@ Scene* GameScene::createScene()
 
 	scene->addChild(GameScene::create());
 
-    return scene;
+	return scene;
 }
 
-// on "init" you need to initialize your instance
 bool GameScene::init()
 {
 	if ( !Node::init() )
@@ -269,9 +267,9 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			return;
 		}
 
-		auto mnemonic = json["m"].GetInt();
-		switch (mnemonic) {
-		case 0:
+		auto opcode = (Opcode)json["o"].GetInt();
+		switch (opcode) {
+		case Opcode::HELLO:
 			role = Role(json["role"].GetInt());
 
 			updateStatus();
@@ -282,8 +280,16 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 				sendPing();
 			}
 			break;
-		case 1:
+		case Opcode::PING:
+			{
+				Role target = Role(json["f"].GetInt());
+				sendPong(target);
+			}
+			break;
+		case Opcode::PONG:
 
+			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime);
+			updateStatus();
 			break;
 		}
 	}
@@ -326,6 +332,13 @@ void GameScene::updateStatus()
 
 	text += "\n";
 
+	std::stringstream ss;
+	ss << pingTime.count();
+
+	text += "Ping: ";
+	text += ss.str();
+	text += "\n";
+
 	status->setString(text);
 }
 
@@ -350,7 +363,44 @@ void GameScene::sendPing()
 		return;
 	}
 
-	startTime = std::chrono::system_clock::now();
+	rapidjson::Document json;
+	json.SetObject();
 
+	json.AddMember("o", 1, json.GetAllocator());
+	if (role == Role::CLIENT1) {
+		json.AddMember("f", (int)Role::CLIENT1, json.GetAllocator());
+	} else if (role == Role::CLIENT2) {
+		json.AddMember("f", (int)Role::CLIENT2, json.GetAllocator());
+	}
+
+	rapidjson::StringBuffer sb;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+	json.Accept(writer);
+
+	pingStartTime = std::chrono::high_resolution_clock::now();
+
+	websocket->send(std::string(sb.GetString()));
 }
 
+void GameScene::sendPong(Role target)
+{
+	if (websocket == nullptr) {
+		return;
+	}
+
+	rapidjson::Document json;
+	json.SetObject();
+
+	json.AddMember("o", 2, json.GetAllocator());
+	if (target == Role::CLIENT1) {
+		json.AddMember("d", (int)Role::CLIENT1, json.GetAllocator());
+	} else if (target == Role::CLIENT2) {
+		json.AddMember("d", (int)Role::CLIENT2, json.GetAllocator());
+	}
+
+	rapidjson::StringBuffer sb;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+	json.Accept(writer);
+
+	websocket->send(std::string(sb.GetString()));
+}
