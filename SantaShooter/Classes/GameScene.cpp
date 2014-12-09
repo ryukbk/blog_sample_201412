@@ -256,7 +256,9 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		switch (mnemonic) {
 		case 0:
 			role = Role(json["role"].GetInt());
-			sendPing();
+			if (role != Role::SERVER) {
+				sendPing();
+			}
 			break;
 		case 1:
 
@@ -294,7 +296,7 @@ void GameScene::sendPing()
 		return;
 	}
 
-
+	startTime = std::chrono::system_clock::now();
 
 }
 

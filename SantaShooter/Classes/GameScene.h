@@ -3,6 +3,7 @@
 #include <vector>
 #include <deque>
 #include <memory>
+#include <chrono>
 #include <string>
 #include <sstream>
 
@@ -31,10 +32,10 @@ private:
 	cocos2d::network::WebSocket* websocket = nullptr;
 
 	Role role = Role::UNINITIALIZED;
-
 	std::deque<std::string> consoleLines;
-	void addConsoleText(std::string text);
+	std::chrono::system_clock::time_point startTime;
 
+	void addConsoleText(std::string text);
 	void sendPing();
 
 public:
