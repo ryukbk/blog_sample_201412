@@ -11,6 +11,10 @@
 #include "ui/CocosGUI.h"
 #include "network/WebSocket.h"
 
+#include "../external/json/document.h"
+#include "../external/json/writer.h"
+#include "../external/json/stringbuffer.h"
+
 #include "PlayerCharacter.h"
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate

@@ -17,24 +17,16 @@ Scene* GameScene::createScene()
 #endif
 
 	physicsWorld->setAutoStep(false);
-
 	physicsWorld->setGravity(Vec2::ZERO);
 
-    // 'layer' is an autorelease object
-    auto layer = GameScene::create();
+	scene->addChild(GameScene::create());
 
-    // add layer as a child to scene
-    scene->addChild(layer);
-
-    // return the scene
     return scene;
 }
 
 // on "init" you need to initialize your instance
 bool GameScene::init()
 {
-    //////////////////////////////
-    // 1. super init first
     if ( !Node::init() )
     {
         return false;
@@ -42,29 +34,23 @@ bool GameScene::init()
 
 	this->scheduleUpdate();
 
+	std::string fullPath = FileUtils::getInstance()->fullPathForFilename("CloseNormal.png");
+	if (!FileUtils::getInstance()->isFileExist(fullPath)) {
+		return true;
+	}
+
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
+    auto closeItem = MenuItemImage::create("CloseNormal.png",
                                            "CloseSelected.png",
                                            CC_CALLBACK_1(GameScene::menuCloseCallback, this));
     
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
+	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2,
                                 origin.y + closeItem->getContentSize().height/2));
 
-    // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
 
 	auto console = CSLoader::createNode("Console.csb");
 	this->addChild(console, 0, "Console");
@@ -251,7 +237,31 @@ void GameScene::onOpen(cocos2d::network::WebSocket* ws)
 
 void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::Data& data)
 {
+	if (ws == websocket) {
+		rapidjson::Document json;
+		json.Parse<0>(data.bytes);
+		if (json.HasParseError())
+		{
+			CCLOG("GetParseError %s\n", json.GetParseError());
 
+			std::string log("GetParseError: ");
+			log += json.GetParseError();
+			log += " ";
+			log += data.bytes;
+			addConsoleText(log);
+			return;
+		}
+
+		auto mnemonic = json["m"].GetInt();
+		switch (mnemonic) {
+		case 0:
+
+			break;
+		case 1:
+
+			break;
+		}
+	}
 }
 
 void GameScene::onClose(cocos2d::network::WebSocket* ws)
