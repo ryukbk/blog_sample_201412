@@ -65,12 +65,14 @@ bool GameScene::init()
 	player1 = PlayerCharacter::create();
 	player1->setPosition(Vec2(PLAYER_X_POS, visibleSize.height / 2));
 	player1->setName("player1");
+	player1->addPhysics();
 	this->addChild(player1);
 
 	player2 = PlayerCharacter::create();
 	player2->setPosition(Vec2(visibleSize.width - PLAYER_X_POS, visibleSize.height / 2));
 	player2->stayIdle(true);
 	player2->setName("player2");
+	player2->addPhysics();
 	this->addChild(player2);
 
 	player1->getPhysicsBody()->setCategoryBitmask(~player2->getContactBitMask());
