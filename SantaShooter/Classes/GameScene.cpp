@@ -142,7 +142,7 @@ void GameScene::addConsoleText(std::string text)
 		finalText += "\n";
 	}
 
-	textBox->setText(finalText);
+	textBox->setString(finalText);
 }
 
 void GameScene::menuCloseCallback(Ref* pSender)
