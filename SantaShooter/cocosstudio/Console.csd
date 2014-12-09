@@ -46,6 +46,26 @@
             <PreSize X="0.0000" Y="0.0000" />
             <FontResource Type="Normal" Path="Marker Felt.ttf" />
           </NodeObjectData>
+          <NodeObjectData Name="Title" ActionTag="1283716057" FrameEvent="" Tag="6" ObjectIndex="2" FontSize="36" LabelText="Santa Shooter" ctype="TextObjectData">
+            <Position X="360.0000" Y="500.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <Size X="200.0000" Y="38.0000" />
+            <PrePosition X="0.0000" Y="0.0000" />
+            <PreSize X="0.0000" Y="0.0000" />
+            <FontResource Type="Normal" Path="Marker Felt.ttf" />
+          </NodeObjectData>
+          <NodeObjectData Name="Status" ActionTag="1097952098" FrameEvent="" Tag="7" ObjectIndex="3" FontSize="20" LabelText="Status" ctype="TextObjectData">
+            <Position X="-31.4337" Y="497.8573" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <Size X="51.0000" Y="21.0000" />
+            <PrePosition X="0.0000" Y="0.0000" />
+            <PreSize X="0.0000" Y="0.0000" />
+            <FontResource Type="Normal" Path="Marker Felt.ttf" />
+          </NodeObjectData>
         </Children>
       </ObjectData>
     </Content>

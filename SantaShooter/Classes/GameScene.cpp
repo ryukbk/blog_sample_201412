@@ -66,18 +66,6 @@ bool GameScene::init()
     /////////////////////////////
     // 3. add your codes below...
 
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    auto label = Label::createWithTTF("Santa Shooter", "fonts/Marker Felt.ttf", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
-
-    // add the label as a child to this layer
-    this->addChild(label, 1);
-
 	auto console = CSLoader::createNode("Console.csb");
 	this->addChild(console, 0, "Console");
 	console->setPosition(Point(100, 100));
@@ -242,9 +230,6 @@ void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
 		finalDest += ':';
 		finalDest += port;
 
-		//std::string s("Connecting to ");
-		//s += ipAddress->getString();
-
 		if (websocket == nullptr) {
 			websocket = new network::WebSocket();
 		}
@@ -271,7 +256,12 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 
 void GameScene::onClose(cocos2d::network::WebSocket* ws)
 {
+	addConsoleText("websocket close");
 
+	if (ws == websocket && websocket != nullptr) {
+		delete websocket;
+		websocket = nullptr;
+	}
 }
 
 void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::ErrorCode& error)
