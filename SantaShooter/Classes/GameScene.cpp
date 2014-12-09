@@ -77,7 +77,7 @@ bool GameScene::init()
 	console->setPosition(Point(100, 100));
 
 	auto connectButton = dynamic_cast<Button*>(console->getChildByName("ConnectButton"));
-	connectButton->addTouchEventListener(this, static_cast<SEL_TouchEvent>(&GameScene::onConnectButtonPressed));
+	connectButton->addTouchEventListener(std::bind(&GameScene::onConnectButtonPressed, this, std::placeholders::_1, std::placeholders::_2));
 
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
 	spriteFrameCache->addSpriteFramesWithFile("sprites.plist");
@@ -188,10 +188,10 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 	return true;
 }
 
-void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
+void GameScene::onConnectButtonPressed(Ref* pSender, cocos2d::ui::Widget::TouchEventType type)
 {
 	switch (type) {
-	case TouchEventType::TOUCH_EVENT_BEGAN:
+	case cocos2d::ui::Widget::TouchEventType::BEGAN:
 		auto parent = dynamic_cast<Button*>(pSender)->getParent();
 		auto ipAddressBox = dynamic_cast<TextField*>(parent->getChildByName("IPAddress"));
 		std::string a = ipAddressBox->getString();
@@ -208,15 +208,13 @@ void GameScene::onConnectButtonPressed(Ref* pSender, TouchEventType type)
 		finalDest += ':';
 		finalDest += port;
 
-		//std::string s("Connecting to ");
-		//s += ipAddress->getString();
-
 		if (websocket == nullptr) {
 			websocket = new network::WebSocket();
 		}
 
 		std::string log = "Connecting to ";
 		log += finalDest;
+
 		CCLOG(log.c_str());
 
 		websocket->init(*this, finalDest);
@@ -242,5 +240,9 @@ void GameScene::onClose(cocos2d::network::WebSocket* ws)
 void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::ErrorCode& error)
 {
 	CCLOG("websocket error code: %d", error);
+    if (websocket != nullptr) {
+        delete websocket;
+        websocket = nullptr;
+    }
 }
 

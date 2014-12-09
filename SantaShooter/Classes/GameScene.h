@@ -36,7 +36,7 @@ public:
 	void onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
 	void onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
 	bool onContactBegin(const cocos2d::PhysicsContact& contact);
-	void onConnectButtonPressed(Ref *pSender, cocos2d::ui::TouchEventType type);
+	void onConnectButtonPressed(Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 
 	CC_SYNTHESIZE(PlayerCharacter*, player1, Player1);
 	CC_SYNTHESIZE(PlayerCharacter*, player2, Player2);
