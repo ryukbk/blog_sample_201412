@@ -286,26 +286,26 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		}
 
 		auto opcode = (Opcode)json["o"].GetInt();
+		Role target = Role(json["d"].GetInt());
 		switch (opcode) {
 		case Opcode::HELLO:
-			role = Role(json["role"].GetInt());
+			role = target;
 
 			updateStatus();
 
 			if (role == Role::SERVER) {
-				
+				gameStartTime = std::chrono::high_resolution_clock::now();
 			} else {
 				sendPing();
 			}
 			break;
 		case Opcode::PING:
 			{
-				Role target = Role(json["d"].GetInt());
 				sendPong(target);
 			}
 			break;
 		case Opcode::PONG:
-			pingTime = std::chrono::duration_cast< std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime).count();
+			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count();
 			updateStatus();
 			break;
 		}
@@ -337,6 +337,10 @@ void GameScene::onError(cocos2d::network::WebSocket* ws, const cocos2d::network:
 
 void GameScene::updateStatus()
 {
+	if (role == Role::UNINITIALIZED) {
+		return;
+	}
+
 	auto status = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("Status"));
 	std::string text("Role: ");
 	if (role == Role::SERVER) {
@@ -349,12 +353,14 @@ void GameScene::updateStatus()
 
 	text += "\n";
 
-	std::stringstream ss;
-	ss << pingTime;
+	if (role != Role::SERVER) {
+		std::stringstream ss;
+		ss << pingTime;
 
-	text += "Ping: ";
-	text += ss.str();
-	text += "\n";
+		text += "Ping: ";
+		text += ss.str();
+		text += "\n";
+	}
 
 	status->setString(text);
 }
@@ -385,11 +391,20 @@ void GameScene::send(const std::string& message)
 
 void GameScene::sendPing()
 {
-	pingStartTime = std::chrono::high_resolution_clock::now();
+	gameStartTime = std::chrono::high_resolution_clock::now();
 	send(createMessage(Opcode::PING, role));
 }
 
 void GameScene::sendPong(Role target)
 {
 	send(createMessage(Opcode::PONG, target));
+}
+
+void GameScene::sendWorldState()
+{
+	// server timestamp
+	// player1 : position, velocity, score
+	// player2 : position, velocity, score
+
+	send(createMessage(Opcode::WORLD_STATE, Role::ALL_CLIENTS));
 }

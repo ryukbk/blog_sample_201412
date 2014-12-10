@@ -25,7 +25,8 @@ enum class Role
 	UNINITIALIZED = 0,
 	SERVER,
 	CLIENT1,
-	CLIENT2
+	CLIENT2,
+	ALL_CLIENTS,
 };
 
 enum class Opcode
@@ -46,7 +47,7 @@ private:
 
 	Role role = Role::UNINITIALIZED;
 	std::deque<std::string> consoleLines;
-	std::chrono::high_resolution_clock::time_point pingStartTime;
+	std::chrono::high_resolution_clock::time_point gameStartTime;
 	long long pingTime;
 
 	void setupPlayers();
@@ -73,6 +74,7 @@ private:
 		json.SetObject();
 
 		json.AddMember("o", (int)opcode, json.GetAllocator());
+		json.AddMember("t", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count(), json.GetAllocator());
 		json.AddMember("d", (int)target, json.GetAllocator());
 
 		// Initializer list with always more than 0 elements.
@@ -91,23 +93,23 @@ private:
 	void addConsoleText(std::string text);
 
 	void send(const std::string& message);
+
+	// Client messages
 	void sendPing();
+
+	// Server messages
 	void sendPong(Role target);
+	void sendWorldState();
 
 public:
-    // there's no 'id' in cpp, so we recommend returning the class instance pointer
-    static cocos2d::Scene* createScene();
+	static cocos2d::Scene* createScene();
+	virtual bool init();
 
-    // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
-    virtual bool init();
-    
 	virtual void update(float deltaTime);
 
-    // a selector callback
-    void menuCloseCallback(cocos2d::Ref* pSender);
-    
-    // implement the "static create()" method manually
-    CREATE_FUNC(GameScene);
+	void menuCloseCallback(cocos2d::Ref* pSender);
+
+	CREATE_FUNC(GameScene);
 
 	virtual void onOpen(cocos2d::network::WebSocket* ws);
 	virtual void onMessage(cocos2d::network::WebSocket* ws, const cocos2d::network::WebSocket::Data& data);
