@@ -43,6 +43,7 @@ public:
 	virtual ~PlayerCharacter();
 
 	void addPhysics();
+
 	void cleanupGiftbox(float deltaTime);
 
 	CC_SYNTHESIZE(cocos2d::Sprite*, idleRight, IdleRight);

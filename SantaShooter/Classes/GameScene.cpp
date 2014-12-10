@@ -54,6 +54,8 @@ bool GameScene::init()
 	auto connectButton = dynamic_cast<Button*>(console->getChildByName("ConnectButton"));
 	connectButton->addTouchEventListener(std::bind(&GameScene::onConnectButtonPressed, this, std::placeholders::_1, std::placeholders::_2));
 
+	setupPlayers();
+
 	return true;
 }
 
@@ -196,12 +198,26 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 
 	CCLOG(log.c_str());
 
-	if ((nameA == "giftbox" && nameB == "player2") || (nameB == "giftbox" && nameA == "player2")) {
-		score1 += 10;
-		updateScore();
-	} else if ((nameA == "giftbox" && nameB == "player1") || (nameB == "giftbox" && nameA == "player1")) {
-		score2 += 10;
-		updateScore();
+	if (nameA == "giftbox") {
+		if (nameB == "player2") {
+			score1 += 10;
+			updateScore();
+			contact.getShapeA()->getBody()->getNode()->removeFromParent();
+		} else if (nameB == "player1") {
+			score2 += 10;
+			updateScore();
+			contact.getShapeA()->getBody()->getNode()->removeFromParent();
+		}
+	} else if (nameB == "giftbox") {
+		if (nameA == "player2") {
+			score1 += 10;
+			updateScore();
+			contact.getShapeB()->getBody()->getNode()->removeFromParent();
+		} else if (nameA == "player1") {
+			score2 += 10;
+			updateScore();
+			contact.getShapeB()->getBody()->getNode()->removeFromParent();
+		}
 	}
 
 	return true;
@@ -275,7 +291,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			updateStatus();
 
 			if (role == Role::SERVER) {
-				setupPlayers();
+				
 			} else {
 				sendPing();
 			}

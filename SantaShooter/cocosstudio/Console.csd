@@ -13,21 +13,21 @@
         <PreSize X="0.0000" Y="0.0000" />
         <Children>
           <NodeObjectData Name="IPAddress" ActionTag="-1455315711" FrameEvent="" Tag="3" ObjectIndex="1" TouchEnable="True" FontSize="20" IsCustomSize="True" LabelText="" PlaceHolderText="127.0.0.1:31337" MaxLengthText="10" ctype="TextFieldObjectData">
-            <Position X="0.0000" Y="0.0000" />
+            <Position X="85.0000" Y="-1.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <Size X="180.0000" Y="27.0000" />
+            <Size X="160.0000" Y="27.0000" />
             <PrePosition X="0.0000" Y="0.0000" />
             <PreSize X="0.0000" Y="0.0000" />
             <FontResource Type="Normal" Path="Marker Felt.ttf" />
           </NodeObjectData>
-          <NodeObjectData Name="ConnectButton" ActionTag="-1547744748" FrameEvent="" Tag="4" ObjectIndex="1" TouchEnable="True" FontSize="14" ButtonText="Connect" Scale9Width="46" Scale9Height="36" ctype="ButtonObjectData">
-            <Position X="160.0000" Y="-8.0000" />
+          <NodeObjectData Name="ConnectButton" ActionTag="-1547744748" FrameEvent="" Tag="4" ObjectIndex="1" TouchEnable="True" FontSize="14" ButtonText=" Connect " Scale9Width="46" Scale9Height="36" ctype="ButtonObjectData">
+            <Position X="-2.0000" Y="-10.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="1.1087" ScaleY="0.1944" />
             <CColor A="255" R="255" G="255" B="255" />
-            <Size X="46.0000" Y="36.0000" />
+            <Size X="49.0000" Y="36.0000" />
             <PrePosition X="0.0000" Y="0.0000" />
             <PreSize X="0.0000" Y="0.0000" />
             <FontResource Type="Normal" Path="Marker Felt.ttf" />
@@ -37,7 +37,7 @@
             <NormalFileData Type="Default" Path="Default/Button_Normal.png" />
           </NodeObjectData>
           <NodeObjectData Name="ConsoleLines" ActionTag="641872877" FrameEvent="" Tag="5" ObjectIndex="1" FontSize="16" LabelText="Ready" ctype="TextObjectData">
-            <Position X="300.0000" Y="0.0000" />
+            <Position X="376.0000" Y="1.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <CColor A="255" R="255" G="255" B="255" />
