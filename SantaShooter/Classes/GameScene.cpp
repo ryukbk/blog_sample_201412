@@ -361,8 +361,8 @@ std::string GameScene::createMessage(Opcode opcode, Role target)
 	rapidjson::Document json;
 	json.SetObject();
 
-	json.AddMember("o", opcode, json.GetAllocator());
-	json.AddMember("d", target, json.GetAllocator());
+	json.AddMember("o", (int)opcode, json.GetAllocator());
+	json.AddMember("d", (int)target, json.GetAllocator());
 
 	rapidjson::StringBuffer sb;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
