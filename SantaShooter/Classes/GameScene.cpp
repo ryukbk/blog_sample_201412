@@ -259,7 +259,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		{
 			CCLOG("GetParseError %s\n", json.GetParseError());
 
-			std::string log("GetParseError: ");
+			std::string log("JSON GetParseError: ");
 			log += json.GetParseError();
 			log += " ";
 			log += data.bytes;
