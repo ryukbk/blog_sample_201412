@@ -129,6 +129,8 @@ void GameScene::setupPlayers()
 void GameScene::update(float deltaTime)
 {
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
+
+
 }
 
 void GameScene::addConsoleText(std::string text)
@@ -370,21 +372,6 @@ void GameScene::updateScore()
 	std::stringstream ss2;
 	ss2 << score2;
 	score2text->setString(ss2.str());
-}
-
-std::string GameScene::createMessage(Opcode opcode, Role target)
-{
-	rapidjson::Document json;
-	json.SetObject();
-
-	json.AddMember("o", (int)opcode, json.GetAllocator());
-	json.AddMember("d", (int)target, json.GetAllocator());
-
-	rapidjson::StringBuffer sb;
-	rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-	json.Accept(writer);
-
-	return std::string(sb.GetString());
 }
 
 void GameScene::send(const std::string& message)

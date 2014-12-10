@@ -33,6 +33,7 @@ enum class Opcode
 	HELLO = 0,
 	PING = 1,
 	PONG = 2,
+	WORLD_STATE = 3,
 };
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
@@ -52,7 +53,40 @@ private:
 	void updateStatus();
 	void updateScore();
 
-	std::string createMessage(Opcode opcode, Role target);
+	template<class T>
+	int addKV(const T& value, rapidjson::Document& json, std::deque<std::string>& keys)
+	{
+		int n = 0;
+		std::stringstream ss;
+		ss << "a" << keys.size();
+		keys.push_back(ss.str());
+
+		// While iterators can be invalidated on insert into deque, references are not
+		json.AddMember(keys.back().c_str(), value, json.GetAllocator());
+		return n;
+	}
+
+	template<class... Ts>
+	std::string createMessage(Opcode opcode, Role target, Ts... args)
+	{
+		rapidjson::Document json;
+		json.SetObject();
+
+		json.AddMember("o", (int)opcode, json.GetAllocator());
+		json.AddMember("d", (int)target, json.GetAllocator());
+
+		// Initializer list with always more than 0 elements.
+		// In a compound statement within parentheses, the right-most value returns while evaluating left to right
+		std::deque<std::string> keys;
+		using tempAlias = int[];
+		tempAlias{ 0, (addKV(args, json, keys), 0)... };
+
+		rapidjson::StringBuffer sb;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+		json.Accept(writer);
+
+		return std::string(sb.GetString());
+	}
 
 	void addConsoleText(std::string text);
 

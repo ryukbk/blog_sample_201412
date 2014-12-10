@@ -59,6 +59,12 @@ void PlayerCharacter::addPhysics()
 	setPhysicsBody(boxBody);
 }
 
+void PlayerCharacter::removePhysics()
+{
+	getPhysicsBody()->removeFromWorld();
+	setPhysicsBody(nullptr);
+}
+
 void PlayerCharacter::move(bool up)
 {
 #ifdef MOVE_WITH_PHYSICS

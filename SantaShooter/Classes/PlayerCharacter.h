@@ -43,6 +43,7 @@ public:
 	virtual ~PlayerCharacter();
 
 	void addPhysics();
+	void removePhysics();
 
 	void cleanupGiftbox(float deltaTime);
 

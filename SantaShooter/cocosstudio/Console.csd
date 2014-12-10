@@ -13,7 +13,7 @@
         <PreSize X="0.0000" Y="0.0000" />
         <Children>
           <NodeObjectData Name="IPAddress" ActionTag="-1455315711" FrameEvent="" Tag="3" ObjectIndex="1" TouchEnable="True" FontSize="20" IsCustomSize="True" LabelText="" PlaceHolderText="127.0.0.1:31337" MaxLengthText="10" ctype="TextFieldObjectData">
-            <Position X="85.0000" Y="-1.0000" />
+            <Position X="100.0000" Y="-1.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <CColor A="255" R="255" G="255" B="255" />
