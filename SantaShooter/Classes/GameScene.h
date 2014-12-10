@@ -52,7 +52,11 @@ private:
 	void updateStatus();
 	void updateScore();
 
+	std::string createMessage(Opcode opcode, Role target);
+
 	void addConsoleText(std::string text);
+
+	void send(const std::string& message);
 	void sendPing();
 	void sendPong(Role target);
 

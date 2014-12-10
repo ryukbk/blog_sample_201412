@@ -282,7 +282,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			break;
 		case Opcode::PING:
 			{
-				Role target = Role(json["f"].GetInt());
+				Role target = Role(json["d"].GetInt());
 				sendPong(target);
 			}
 			break;
@@ -356,50 +356,37 @@ void GameScene::updateScore()
 	score2text->setString(ss2.str());
 }
 
-void GameScene::sendPing()
+std::string GameScene::createMessage(Opcode opcode, Role target)
 {
-	if (websocket == nullptr) {
-		return;
-	}
-
 	rapidjson::Document json;
 	json.SetObject();
 
-	json.AddMember("o", 1, json.GetAllocator());
-	if (role == Role::CLIENT1) {
-		json.AddMember("f", (int)Role::CLIENT1, json.GetAllocator());
-	} else if (role == Role::CLIENT2) {
-		json.AddMember("f", (int)Role::CLIENT2, json.GetAllocator());
-	}
+	json.AddMember("o", opcode, json.GetAllocator());
+	json.AddMember("d", target, json.GetAllocator());
 
 	rapidjson::StringBuffer sb;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
 	json.Accept(writer);
 
-	pingStartTime = std::chrono::high_resolution_clock::now();
+	return std::string(sb.GetString());
+}
 
-	websocket->send(std::string(sb.GetString()));
+void GameScene::send(const std::string& message)
+{
+	if (websocket == nullptr) {
+		return;
+	}
+
+	websocket->send(message);
+}
+
+void GameScene::sendPing()
+{
+	pingStartTime = std::chrono::high_resolution_clock::now();
+	send(createMessage(Opcode::PING, role));
 }
 
 void GameScene::sendPong(Role target)
 {
-	if (websocket == nullptr) {
-		return;
-	}
-
-	rapidjson::Document json;
-	json.SetObject();
-
-	json.AddMember("o", 2, json.GetAllocator());
-	if (target == Role::CLIENT1) {
-		json.AddMember("d", (int)Role::CLIENT1, json.GetAllocator());
-	} else if (target == Role::CLIENT2) {
-		json.AddMember("d", (int)Role::CLIENT2, json.GetAllocator());
-	}
-
-	rapidjson::StringBuffer sb;
-	rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-	json.Accept(writer);
-
-	websocket->send(std::string(sb.GetString()));
+	send(createMessage(Opcode::PONG, target));
 }
