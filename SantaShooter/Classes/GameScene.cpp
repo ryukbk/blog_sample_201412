@@ -201,24 +201,34 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 	CCLOG(log.c_str());
 
 	if (nameA == "giftbox") {
+		Node* giftbox = contact.getShapeA()->getBody()->getNode();
 		if (nameB == "player2") {
 			score1 += 10;
 			updateScore();
-			contact.getShapeA()->getBody()->getNode()->removeFromParent();
+			player1->removeFromGiftboxes(giftbox);
+			player2->removeFromGiftboxes(giftbox);
+			giftbox->removeFromParent();
 		} else if (nameB == "player1") {
 			score2 += 10;
 			updateScore();
-			contact.getShapeA()->getBody()->getNode()->removeFromParent();
+			player1->removeFromGiftboxes(giftbox);
+			player2->removeFromGiftboxes(giftbox);
+			giftbox->removeFromParent();
 		}
 	} else if (nameB == "giftbox") {
+		Node* giftbox = contact.getShapeB()->getBody()->getNode();
 		if (nameA == "player2") {
 			score1 += 10;
 			updateScore();
-			contact.getShapeB()->getBody()->getNode()->removeFromParent();
+			player1->removeFromGiftboxes(giftbox);
+			player2->removeFromGiftboxes(giftbox);
+			giftbox->removeFromParent();
 		} else if (nameA == "player1") {
 			score2 += 10;
 			updateScore();
-			contact.getShapeB()->getBody()->getNode()->removeFromParent();
+			player1->removeFromGiftboxes(giftbox);
+			player2->removeFromGiftboxes(giftbox);
+			giftbox->removeFromParent();
 		}
 	}
 

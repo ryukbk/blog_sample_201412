@@ -46,6 +46,7 @@ public:
 	void removePhysics();
 
 	void cleanupGiftbox(float deltaTime);
+	void removeFromGiftboxes(Node* giftbox);
 
 	CC_SYNTHESIZE(cocos2d::Sprite*, idleRight, IdleRight);
 	CC_SYNTHESIZE(cocos2d::Node*, walkUp, WalkUp);

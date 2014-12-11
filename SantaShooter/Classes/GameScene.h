@@ -18,8 +18,6 @@
 
 #include "PlayerCharacter.h"
 
-#include <time.h>
-
 enum class Role
 {
 	UNINITIALIZED = 0,

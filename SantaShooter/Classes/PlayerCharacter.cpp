@@ -199,3 +199,10 @@ void PlayerCharacter::cleanupGiftbox(float deltaTime)
 		return offscreen;
 	}), giftboxes.end());
 }
+
+void PlayerCharacter::removeFromGiftboxes(Node* giftbox)
+{
+	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [giftbox](Node* gb) {
+		return gb == giftbox;
+	}), giftboxes.end());
+}
