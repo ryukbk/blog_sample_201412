@@ -412,9 +412,11 @@ void GameScene::sendPong(Role target)
 
 void GameScene::sendWorldState()
 {
-	// server timestamp
-	// player1 : position, velocity, score
-	// player2 : position, velocity, score
-
+	// [world state]
+	// * server timestamp
+	// * player1 : position, velocity, score
+	// * player2 : position, velocity, score
+	// * opponent giftbox array size
+	// * opponent giftbox n: position, velocity
 	send(createMessage(Opcode::WORLD_STATE, Role::ALL_CLIENTS));
 }
