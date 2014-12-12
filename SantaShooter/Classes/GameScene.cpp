@@ -524,5 +524,11 @@ void GameScene::sendFire(Role origin, Point point)
 
 void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
-	
+	player1->setPosition(player1Position);
+	player1->getPhysicsBody()->setVelocity(player1Velocity);
+	player1->setScore(player1Score);
+
+	player2->setPosition(player2Position);
+	player2->getPhysicsBody()->setVelocity(player2Velocity);
+	player2->setScore(player2Score);
 }
