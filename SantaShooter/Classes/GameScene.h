@@ -98,7 +98,12 @@ private:
 	// Server messages
 	void sendPong(Role target);
 	void sendWorldState();
-	void sendFire(Role origin, Point point);
+	void sendFire(Role origin, cocos2d::Point point);
+
+	void acceptWorldState(
+		cocos2d::Point player1Position, cocos2d::Point player1Velocity, int player1Score,
+		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
+	);
 
 public:
 	static cocos2d::Scene* createScene();

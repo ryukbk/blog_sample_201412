@@ -220,13 +220,17 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, coco
 		Point touchPosition = touch->getLocation();
 		if (touchPosition.x > visibleSize.width / 2) {
 			CCLOG("Player 1 attack");
-			player1->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player2->getContactBitMask());
+			if (role == Role::UNINITIALIZED || role == Role::CLIENT1) {
+				player1->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player2->getContactBitMask());
+			}
 			if (role == Role::CLIENT1) {
 				sendFire(role, touch->getLocation());
 			}
 		} else {
 			CCLOG("Player 2 attack");
-			player2->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player1->getContactBitMask());
+			if (role == Role::UNINITIALIZED || role == Role::CLIENT2) {
+				player2->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player1->getContactBitMask());
+			}
 			if (role == Role::CLIENT2) {
 				sendFire(role, touch->getLocation());
 			}
@@ -374,6 +378,28 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count();
 			updateStatus();
 			break;
+		case Opcode::WORLD_STATE:
+			{
+				acceptWorldState(
+					Point(json["a0"].GetInt(), json["a1"].GetInt()),
+					Point(json["a2"].GetInt(), json["a3"].GetInt()),
+					json["a4"].GetInt(),
+					Point(json["a5"].GetInt(), json["a6"].GetInt()),
+					Point(json["a7"].GetInt(), json["a8"].GetInt()),
+					json["a9"].GetInt()
+				);
+			}
+			break;
+		case Opcode::KEY_INPUT:
+			{
+
+			}
+			break;
+		case Opcode::FIRE:
+			{
+				
+			}
+			break;
 		}
 	}
 }
@@ -494,4 +520,9 @@ void GameScene::sendWorldState()
 void GameScene::sendFire(Role origin, Point point)
 {
 	send(createMessage(Opcode::FIRE, origin, point.x, point.y));
+}
+
+void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
+{
+	
 }
