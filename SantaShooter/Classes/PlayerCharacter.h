@@ -18,6 +18,14 @@ static const float PLAYER_GIFTBOX_SCALE = 3.0f;
 static const float PLAYER_GIFTBOX_SPEED_WITHOUT_PHYSICS = 2500.0f;
 static const float PLAYER_GIFTBOX_SPEED_WITH_PHYSICS = 600.0f;
 
+enum class KeyInput
+{
+	IDLE,
+	UP,
+	DOWN,
+	STOP
+};
+
 class PlayerCharacter : public cocos2d::Node
 {
 private:
@@ -54,6 +62,8 @@ public:
 	CC_SYNTHESIZE(cocostudio::timeline::ActionTimeline*, walkUpAnimation, WalkUpAnimation);
 	CC_SYNTHESIZE(cocostudio::timeline::ActionTimeline*, walkDownAnimation, WalkDownAnimation);
 	CC_SYNTHESIZE(int, contactBitMask, ContactBitMask);
+	CC_SYNTHESIZE(int, score, Score);
+	CC_SYNTHESIZE(KeyInput, keyInput, KeyInput);
 
 	void playWalkUp();
 	void playWalkDown();

@@ -18,28 +18,25 @@
 
 #include "PlayerCharacter.h"
 
-enum class Role
-{
-	UNINITIALIZED = 0,
-	SERVER,
-	CLIENT1,
-	CLIENT2,
-	ALL_CLIENTS,
-};
-
-enum class Opcode
-{
-	HELLO = 0,
-	PING = 1,
-	PONG = 2,
-	WORLD_STATE = 3,
-};
-
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
 private:
-	int score1 = 0;
-	int score2 = 0;
+	enum class Role
+	{
+		UNINITIALIZED = 0,
+		SERVER,
+		CLIENT1,
+		CLIENT2,
+		ALL_CLIENTS,
+	};
+
+	enum class Opcode
+	{
+		HELLO = 0,
+		PING = 1,
+		PONG = 2,
+		WORLD_STATE = 3,
+	};
 
 	cocos2d::network::WebSocket* websocket = nullptr;
 
@@ -94,10 +91,12 @@ private:
 
 	// Client messages
 	void sendPing();
+	void sendInput();
 
 	// Server messages
 	void sendPong(Role target);
 	void sendWorldState();
+	void sendProjectiles();
 
 public:
 	static cocos2d::Scene* createScene();

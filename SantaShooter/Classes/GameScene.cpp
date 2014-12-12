@@ -87,16 +87,16 @@ void GameScene::setupPlayers()
 	listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_W:
-			player1->playWalkUp();
+			player1->setKeyInput(KeyInput::UP);
 			break;
 		case EventKeyboard::KeyCode::KEY_S:
-			player1->playWalkDown();
+			player1->setKeyInput(KeyInput::DOWN);
 			break;
 		case EventKeyboard::KeyCode::KEY_UP_ARROW:
-			player2->playWalkUp();
+			player2->setKeyInput(KeyInput::UP);
 			break;
 		case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-			player2->playWalkDown();
+			player2->setKeyInput(KeyInput::DOWN);
 			break;
 		}
 	};
@@ -105,11 +105,11 @@ void GameScene::setupPlayers()
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_W:
 		case EventKeyboard::KeyCode::KEY_S:
-			player1->stayIdle(false);
+			player1->setKeyInput(KeyInput::STOP);
 			break;
 		case EventKeyboard::KeyCode::KEY_UP_ARROW:
 		case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-			player2->stayIdle(true);
+			player2->setKeyInput(KeyInput::STOP);
 			break;
 		}
 	};
@@ -128,9 +128,35 @@ void GameScene::setupPlayers()
 
 void GameScene::update(float deltaTime)
 {
+	switch (player1->getKeyInput()) {
+	case KeyInput::UP:
+		player1->playWalkUp();
+		break;
+	case KeyInput::DOWN:
+		player1->playWalkDown();
+		break;
+	case KeyInput::STOP:
+		player1->stayIdle(false);
+		break;
+	}
+
+	player1->setKeyInput(KeyInput::IDLE);
+
+	switch (player2->getKeyInput()) {
+	case KeyInput::UP:
+		player2->playWalkUp();
+		break;
+	case KeyInput::DOWN:
+		player2->playWalkDown();
+		break;
+	case KeyInput::STOP:
+		player2->stayIdle(false);
+		break;
+	}
+
+	player2->setKeyInput(KeyInput::IDLE);
+
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
-
-
 }
 
 void GameScene::addConsoleText(std::string text)
@@ -203,13 +229,13 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 	if (nameA == "giftbox") {
 		Node* giftbox = contact.getShapeA()->getBody()->getNode();
 		if (nameB == "player2") {
-			score1 += 10;
+			player1->setScore(player1->getScore() + 10);
 			updateScore();
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
 			giftbox->removeFromParent();
 		} else if (nameB == "player1") {
-			score2 += 10;
+			player2->setScore(player2->getScore() + 10);
 			updateScore();
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
@@ -218,13 +244,13 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 	} else if (nameB == "giftbox") {
 		Node* giftbox = contact.getShapeB()->getBody()->getNode();
 		if (nameA == "player2") {
-			score1 += 10;
+			player1->setScore(player1->getScore() + 10);
 			updateScore();
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
 			giftbox->removeFromParent();
 		} else if (nameA == "player1") {
-			score2 += 10;
+			player2->setScore(player2->getScore() + 10);
 			updateScore();
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
@@ -381,12 +407,12 @@ void GameScene::updateScore()
 	auto score2text = dynamic_cast<Text*>(this->getChildByName("Console")->getChildByName("Score2"));
 
 	std::stringstream ss1;
-	ss1 << score1;
+	ss1 << player1->getScore();
 
 	score1text->setString(ss1.str());
 
 	std::stringstream ss2;
-	ss2 << score2;
+	ss2 << player2->getScore();
 	score2text->setString(ss2.str());
 }
 
@@ -405,6 +431,11 @@ void GameScene::sendPing()
 	send(createMessage(Opcode::PING, role));
 }
 
+void GameScene::sendInput()
+{
+
+}
+
 void GameScene::sendPong(Role target)
 {
 	send(createMessage(Opcode::PONG, target));
@@ -413,10 +444,25 @@ void GameScene::sendPong(Role target)
 void GameScene::sendWorldState()
 {
 	// [world state]
-	// * server timestamp
 	// * player1 : position, velocity, score
 	// * player2 : position, velocity, score
-	// * opponent giftbox array size
-	// * opponent giftbox n: position, velocity
-	send(createMessage(Opcode::WORLD_STATE, Role::ALL_CLIENTS));
+	send(createMessage(
+		Opcode::WORLD_STATE,
+		Role::ALL_CLIENTS,
+		player1->getPosition().x,
+		player1->getPosition().y,
+		player1->getPhysicsBody()->getVelocity().x,
+		player1->getPhysicsBody()->getVelocity().y,
+		player1->getScore(),
+		player2->getPosition().x,
+		player2->getPosition().y,
+		player2->getPhysicsBody()->getVelocity().x,
+		player2->getPhysicsBody()->getVelocity().y,
+		player2->getScore()
+	));
+}
+
+void GameScene::sendProjectiles()
+{
+
 }

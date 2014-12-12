@@ -12,6 +12,8 @@ bool PlayerCharacter::init()
 		return false;
 	}
 
+	score = 0;
+
 	auto spriteFrameCache = SpriteFrameCache::getInstance();
 	idleRight = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("slice12_12.png"));
 	this->addChild(idleRight, 0, "IDLE_RIGHT");
