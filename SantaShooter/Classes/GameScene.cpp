@@ -87,16 +87,24 @@ void GameScene::setupPlayers()
 	listener->onKeyPressed = [=](EventKeyboard::KeyCode keyCode, Event* event) {
 		switch (keyCode) {
 		case EventKeyboard::KeyCode::KEY_W:
-			player1->setKeyInput(KeyInput::UP);
+			if (role == Role::UNINITIALIZED || role == Role::CLIENT1) {
+				player1->setKeyInput(KeyInput::UP);
+			}
 			break;
 		case EventKeyboard::KeyCode::KEY_S:
-			player1->setKeyInput(KeyInput::DOWN);
+			if (role == Role::UNINITIALIZED || role == Role::CLIENT1) {
+				player1->setKeyInput(KeyInput::DOWN);
+			}
 			break;
 		case EventKeyboard::KeyCode::KEY_UP_ARROW:
-			player2->setKeyInput(KeyInput::UP);
+			if (role == Role::UNINITIALIZED || role == Role::CLIENT2) {
+				player2->setKeyInput(KeyInput::UP);
+			}
 			break;
 		case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-			player2->setKeyInput(KeyInput::DOWN);
+			if (role == Role::UNINITIALIZED || role == Role::CLIENT2) {
+				player2->setKeyInput(KeyInput::DOWN);
+			}
 			break;
 		}
 	};
@@ -140,6 +148,10 @@ void GameScene::update(float deltaTime)
 		break;
 	}
 
+	if (role == Role::CLIENT1 && player1->getKeyInput() != KeyInput::IDLE) {
+		sendKeyInput(role, player1->getKeyInput());
+	}
+
 	player1->setKeyInput(KeyInput::IDLE);
 
 	switch (player2->getKeyInput()) {
@@ -150,13 +162,21 @@ void GameScene::update(float deltaTime)
 		player2->playWalkDown();
 		break;
 	case KeyInput::STOP:
-		player2->stayIdle(false);
+		player2->stayIdle(true);
 		break;
+	}
+
+	if (role == Role::CLIENT2 && player2->getKeyInput() != KeyInput::IDLE) {
+		sendKeyInput(role, player2->getKeyInput());
 	}
 
 	player2->setKeyInput(KeyInput::IDLE);
 
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
+
+	if (role == Role::SERVER) {
+		sendWorldState();
+	}
 }
 
 void GameScene::addConsoleText(std::string text)
@@ -200,11 +220,20 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, coco
 		Point touchPosition = touch->getLocation();
 		if (touchPosition.x > visibleSize.width / 2) {
 			CCLOG("Player 1 attack");
-			player1->attack(this, touch, spriteFrameCache, visibleSize, player2->getContactBitMask());
+			player1->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player2->getContactBitMask());
+			if (role == Role::CLIENT1) {
+				sendFire(role, touch->getLocation());
+			}
 		} else {
 			CCLOG("Player 2 attack");
-			player2->attack(this, touch, spriteFrameCache, visibleSize, player1->getContactBitMask());
+			player2->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player1->getContactBitMask());
+			if (role == Role::CLIENT2) {
+				sendFire(role, touch->getLocation());
+			}
 		}
+
+		// TODO: add proper support for multitouch
+		break;
 	}
 }
 
@@ -332,6 +361,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			if (role == Role::SERVER) {
 				gameStartTime = std::chrono::high_resolution_clock::now();
 			} else {
+				gameStartTime = std::chrono::high_resolution_clock::now();
 				sendPing();
 			}
 			break;
@@ -427,13 +457,12 @@ void GameScene::send(const std::string& message)
 
 void GameScene::sendPing()
 {
-	gameStartTime = std::chrono::high_resolution_clock::now();
 	send(createMessage(Opcode::PING, role));
 }
 
-void GameScene::sendInput()
+void GameScene::sendKeyInput(Role origin, KeyInput keyInput)
 {
-
+	send(createMessage(Opcode::KEY_INPUT, origin, (int)keyInput));
 }
 
 void GameScene::sendPong(Role target)
@@ -462,7 +491,7 @@ void GameScene::sendWorldState()
 	));
 }
 
-void GameScene::sendProjectiles()
+void GameScene::sendFire(Role origin, Point point)
 {
-
+	send(createMessage(Opcode::FIRE, origin, point.x, point.y));
 }

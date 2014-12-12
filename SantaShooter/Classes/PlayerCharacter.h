@@ -70,7 +70,7 @@ public:
 	void stayIdle(bool flipped);
 	void attack(
 		cocos2d::Node* scene,
-		cocos2d::Touch* touch,
+		cocos2d::Point touchPoint,
 		cocos2d::SpriteFrameCache* spriteFrameCache,
 		const cocos2d::Size& visibleSize,
 		int targetContactBitMask

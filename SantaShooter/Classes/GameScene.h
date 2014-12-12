@@ -36,6 +36,8 @@ private:
 		PING = 1,
 		PONG = 2,
 		WORLD_STATE = 3,
+		KEY_INPUT = 4,
+		FIRE = 5,
 	};
 
 	cocos2d::network::WebSocket* websocket = nullptr;
@@ -91,12 +93,12 @@ private:
 
 	// Client messages
 	void sendPing();
-	void sendInput();
+	void sendKeyInput(Role origin, KeyInput keyInput);
 
 	// Server messages
 	void sendPong(Role target);
 	void sendWorldState();
-	void sendProjectiles();
+	void sendFire(Role origin, Point point);
 
 public:
 	static cocos2d::Scene* createScene();

@@ -135,7 +135,7 @@ void PlayerCharacter::stayIdle(bool flipped)
 
 void PlayerCharacter::attack(
 	cocos2d::Node* scene,
-	cocos2d::Touch* touch,
+	cocos2d::Point touchPoint,
 	cocos2d::SpriteFrameCache* spriteFrameCache,
 	const cocos2d::Size& visibleSize,
 	int targetContactBitMask
@@ -156,9 +156,8 @@ void PlayerCharacter::attack(
 	giftbox->setName("giftbox");
 
 	Point start = getPosition();
-	Point end = touch->getLocation();
 	
-	if (end.x > visibleSize.width / 2) {
+	if (touchPoint.x > visibleSize.width / 2) {
 		start.x += 100.0f;
 	} else {
 		start.x -= 100.0f;
@@ -168,19 +167,19 @@ void PlayerCharacter::attack(
 
 	scene->addChild(giftbox, 0);
 
-	float angle = Point(end - start).getAngle();
+	float angle = Point(touchPoint - start).getAngle();
 
 #ifdef MOVE_WITH_PHYSICS
 	giftbox->getPhysicsBody()->setVelocity(Vec2(cos(angle) * PLAYER_GIFTBOX_SPEED_WITH_PHYSICS, sin(angle) * PLAYER_GIFTBOX_SPEED_WITH_PHYSICS));
 #else
-	end.add(Point(cos(angle) * 300, sin(angle) * 300));
+	touchPoint.add(Point(cos(angle) * 300, sin(angle) * 300));
 
 	auto callback = CallFunc::create([giftbox]() {
 		giftbox->removeFromParent();
 	});
 
-	float duration = start.getDistance(end) / PLAYER_GIFTBOX_SPEED_WITHOUT_PHYSICS;
-	auto sequence = Sequence::create(MoveTo::create(duration, end), callback, NULL);
+	float duration = start.getDistance(touchPoint) / PLAYER_GIFTBOX_SPEED_WITHOUT_PHYSICS;
+	auto sequence = Sequence::create(MoveTo::create(duration, touchPoint), callback, NULL);
 	giftbox->runAction(sequence);
 #endif
 
