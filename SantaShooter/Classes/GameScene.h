@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <deque>
+#include <utility>
 #include <memory>
 #include <chrono>
 #include <string>
@@ -17,6 +18,8 @@
 #include "../external/json/stringbuffer.h"
 
 #include "PlayerCharacter.h"
+
+static const int CLIENT_ACTION_LOG_CAPACITY = 180;
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
@@ -44,9 +47,18 @@ private:
 	cocos2d::network::WebSocket* websocket = nullptr;
 
 	Role role = Role::UNINITIALIZED;
+
+	std::deque<std::pair<int64_t, KeyInput>> clientActionLog;
+
 	std::deque<std::string> consoleLines;
+
 	std::chrono::high_resolution_clock::time_point gameStartTime;
 	std::chrono::high_resolution_clock::time_point pingStartTime;
+
+	inline int64_t getCurrentTimestamp()
+	{
+		return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count();
+	}
 
 	void setupPlayers();
 	void updateStatus();
@@ -72,7 +84,7 @@ private:
 		json.SetObject();
 
 		json.AddMember("o", (int)opcode, json.GetAllocator());
-		json.AddMember("t", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime).count(), json.GetAllocator());
+		json.AddMember("t", getCurrentTimestamp(), json.GetAllocator());
 		json.AddMember("a", lastAckTimestamp, json.GetAllocator());
 		json.AddMember("d", (int)target, json.GetAllocator());
 
@@ -103,7 +115,7 @@ private:
 	void sendWorldState(Role target, int64_t knownTimestamp);
 	void sendFire(Role origin, cocos2d::Point point);
 
-	void acceptWorldState(
+	void acceptAuthoritativeWorldState(
 		cocos2d::Point player1Position, cocos2d::Point player1Velocity, int player1Score,
 		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
 	);

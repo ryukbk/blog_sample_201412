@@ -31,8 +31,6 @@ class PlayerCharacter : public cocos2d::Node
 private:
 	std::list<cocos2d::Node*> giftboxes;
 
-	void move(bool up);
-
 	static int currentContactBitMask;
 	static int getNewContactBitMask()
 	{
@@ -79,6 +77,8 @@ public:
 
 	void playWalkUp();
 	void playWalkDown();
+	void move(bool up);
+	void stop();
 	void stayIdle(bool flipped);
 	void attack(
 		cocos2d::Node* scene,
@@ -87,4 +87,6 @@ public:
 		const cocos2d::Size& visibleSize,
 		int targetContactBitMask
 	);
+
+	void toggleGiftboxPhysics(bool enabled);
 };

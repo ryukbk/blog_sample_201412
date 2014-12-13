@@ -125,15 +125,20 @@ void PlayerCharacter::playWalkDown()
 	move(false);
 }
 
-void PlayerCharacter::stayIdle(bool flipped)
+void PlayerCharacter::stop()
 {
-	animationState = AnimationState::IDLE;
-
 #ifdef MOVE_WITH_PHYSICS
 	if (this->getPhysicsBody() != nullptr) {
 		this->getPhysicsBody()->setVelocity(Vec2::ZERO);
 	}
 #endif
+}
+
+void PlayerCharacter::stayIdle(bool flipped)
+{
+	animationState = AnimationState::IDLE;
+
+	stop();
 
 	this->stopAllActions();
 
@@ -223,4 +228,11 @@ void PlayerCharacter::removeFromGiftboxes(Node* giftbox)
 	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [giftbox](Node* gb) {
 		return gb == giftbox;
 	}), giftboxes.end());
+}
+
+void PlayerCharacter::toggleGiftboxPhysics(bool enabled)
+{
+	for (auto giftbox: giftboxes) {
+		giftbox->getPhysicsBody()->setEnable(enabled);
+	}
 }

@@ -435,7 +435,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			break;
 		case Opcode::WORLD_STATE:
 			{
-				acceptWorldState(
+				acceptAuthoritativeWorldState(
 					Point(json["a0"].GetDouble(), json["a1"].GetDouble()),
 					Point(json["a2"].GetDouble(), json["a3"].GetDouble()),
 					json["a4"].GetInt(),
@@ -560,6 +560,11 @@ void GameScene::sendPing()
 
 void GameScene::sendKeyInput(Role origin, KeyInput keyInput)
 {
+	clientActionLog.push_back(std::make_pair(getCurrentTimestamp(), keyInput));
+	if (clientActionLog.size() > CLIENT_ACTION_LOG_CAPACITY) {
+		clientActionLog.pop_front();
+	}
+
 	send(createMessage(Opcode::KEY_INPUT, lastAckTimeAsClient, origin, (int)keyInput));
 }
 
@@ -604,7 +609,7 @@ void GameScene::sendFire(Role origin, Point point)
 	}
 }
 
-void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
+void GameScene::acceptAuthoritativeWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
 	if (player1->getScore() != player1Score || player2->getScore() != player2Score) {
 		player1->setScore(player1Score);
@@ -625,6 +630,41 @@ void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, i
 		}
 
 		// TODO: Add player1 position correction for client prediction
+		float distance = player1->getPosition().distance(player1Position);
+		if (distance > 100.0f) {
+			int64_t correctionTime = getCurrentTimestamp() - pingTime;
+			while (!clientActionLog.empty() && clientActionLog.front().first < correctionTime) {
+				clientActionLog.pop_front();
+			}
+
+			if (!clientActionLog.empty()) {
+				player1->toggleGiftboxPhysics(false);
+				int64_t delta = 0;
+				int64_t currentTime = getCurrentTimestamp();
+				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(clientActionLog.front().first - currentTime));
+
+				player1->setPosition(player1Position);
+
+				for (auto action: clientActionLog) {
+					if (delta != 0) {
+						Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(action.first - delta));
+					}
+
+					delta = action.first;
+
+					if (action.second == KeyInput::UP) {
+						player1->move(true);
+					} else if (action.second == KeyInput::DOWN) {
+						player1->move(false);
+					} else if (action.second == KeyInput::STOP) {
+						player1->stop();
+					}
+				}
+
+				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - delta));
+				player1->toggleGiftboxPhysics(true);
+			}
+		}
 	}
 
 	if (role == Role::CLIENT2) {
