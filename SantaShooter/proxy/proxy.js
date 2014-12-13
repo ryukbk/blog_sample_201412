@@ -23,8 +23,8 @@ wss.on('connection', function(ws) {
 	ws.on('message', function(message) {
 		if (ws === wss.clients[0]) {
 			var json = JSON.parse(message);
-			if (json.o != 3) {
-				console.log(message);
+			if (json.o != 4) {
+				console.log(ws.name + ": " + message);
 			}
 
 			if (json.d == 2) {
@@ -44,6 +44,7 @@ wss.on('connection', function(ws) {
 				}
 			}
 		} else { // client to server
+			console.log(ws.name + ": " + message);
 			wss.clients[0].send(message);
 		}
 	});

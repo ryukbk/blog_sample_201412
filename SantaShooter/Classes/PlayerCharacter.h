@@ -73,6 +73,9 @@ public:
 	CC_SYNTHESIZE(int64_t, lastAckTimestamp, LastAckTimestamp);
 	CC_SYNTHESIZE(KeyInput, keyInput, KeyInput);
 	CC_SYNTHESIZE(AnimationState, animationState, AnimationState);
+	CC_SYNTHESIZE(bool, handShakeDone, HandShakeDone);
+	CC_SYNTHESIZE(int64_t, pingTime, PingTime);
+	CC_SYNTHESIZE(std::chrono::high_resolution_clock::time_point, pingStartTime, PingStartTime);
 
 	void playWalkUp();
 	void playWalkDown();

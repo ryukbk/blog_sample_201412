@@ -14,6 +14,7 @@ bool PlayerCharacter::init()
 
 	animationState = AnimationState::IDLE;
 	lastAckTimestamp = 0;
+	handShakeDone = false;
 	score = 0;
 
 	auto spriteFrameCache = SpriteFrameCache::getInstance();

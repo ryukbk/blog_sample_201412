@@ -35,9 +35,10 @@ private:
 		HELLO = 0,
 		PING = 1,
 		PONG = 2,
-		WORLD_STATE = 3,
-		KEY_INPUT = 4,
-		FIRE = 5,
+		HANDSHAKE_ACK = 3,
+		WORLD_STATE = 4,
+		KEY_INPUT = 5,
+		FIRE = 6,
 	};
 
 	cocos2d::network::WebSocket* websocket = nullptr;
@@ -45,6 +46,7 @@ private:
 	Role role = Role::UNINITIALIZED;
 	std::deque<std::string> consoleLines;
 	std::chrono::high_resolution_clock::time_point gameStartTime;
+	std::chrono::high_resolution_clock::time_point pingStartTime;
 
 	void setupPlayers();
 	void updateStatus();
@@ -70,7 +72,7 @@ private:
 		json.SetObject();
 
 		json.AddMember("o", (int)opcode, json.GetAllocator());
-		json.AddMember("t", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count(), json.GetAllocator());
+		json.AddMember("t", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime).count(), json.GetAllocator());
 		json.AddMember("a", lastAckTimestamp, json.GetAllocator());
 		json.AddMember("d", (int)target, json.GetAllocator());
 
@@ -93,6 +95,7 @@ private:
 
 	// Client messages
 	void sendPing();
+	void sendHandshakeAck();
 	void sendKeyInput(Role origin, KeyInput keyInput);
 
 	// Server messages

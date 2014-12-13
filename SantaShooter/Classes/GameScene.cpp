@@ -178,8 +178,13 @@ void GameScene::update(float deltaTime)
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
 
 	if (role == Role::SERVER) {
-		sendWorldState(Role::CLIENT1, player1->getLastAckTimestamp());
-		sendWorldState(Role::CLIENT2, player2->getLastAckTimestamp());
+		if (player1->getHandShakeDone()) {
+			sendWorldState(Role::CLIENT1, player1->getLastAckTimestamp());
+		}
+
+		if (player2->getHandShakeDone()) {
+			sendWorldState(Role::CLIENT2, player2->getLastAckTimestamp());
+		}
 	}
 }
 
@@ -382,6 +387,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			updateStatus();
 
 			gameStartTime = std::chrono::high_resolution_clock::now();
+
 			if (role != Role::SERVER) {
 				if (role == Role::CLIENT1) {
 					player2->removePhysics();
@@ -389,18 +395,31 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 					player1->removePhysics();
 				}
 
-				gameStartTime = std::chrono::high_resolution_clock::now();
 				sendPing();
 			}
 			break;
 		case Opcode::PING:
-			{
-				sendPong(origin, timestamp);
+			if (origin == Role::CLIENT1) {
+				player1->setPingStartTime(std::chrono::high_resolution_clock::now());
+			} else if (origin == Role::CLIENT2) {
+				player2->setPingStartTime(std::chrono::high_resolution_clock::now());
 			}
+
+			sendPong(origin, timestamp);
 			break;
 		case Opcode::PONG:
-			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count();
+			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime).count();
 			updateStatus();
+			sendHandshakeAck();
+			break;
+		case Opcode::HANDSHAKE_ACK:
+			if (origin == Role::CLIENT1) {
+				player1->setPingTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - player1->getPingStartTime()).count());
+				player1->setHandShakeDone(true);
+			} else if (origin == Role::CLIENT2) {
+				player2->setPingTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - player2->getPingStartTime()).count());
+				player2->setHandShakeDone(true);
+			}
 			break;
 		case Opcode::WORLD_STATE:
 			{
@@ -511,6 +530,7 @@ void GameScene::send(const std::string& message)
 
 void GameScene::sendPing()
 {
+	pingStartTime = std::chrono::high_resolution_clock::now();
 	send(createMessage(Opcode::PING, lastAckTimeAsClient, role));
 }
 
@@ -522,6 +542,11 @@ void GameScene::sendKeyInput(Role origin, KeyInput keyInput)
 void GameScene::sendPong(Role target, int64_t knownTimestamp)
 {
 	send(createMessage(Opcode::PONG, knownTimestamp, target));
+}
+
+void GameScene::sendHandshakeAck()
+{
+	send(createMessage(Opcode::HANDSHAKE_ACK, lastAckTimeAsClient, role));
 }
 
 void GameScene::sendWorldState(Role target, int64_t knownTimestamp)
@@ -558,19 +583,6 @@ void GameScene::sendFire(Role origin, Point point)
 void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
 	player1->setScore(player1Score);
-
-	if (role == Role::CLIENT2) {
-		player1->setPosition(player1Position);
-
-		if (player1Velocity.y > 0) {
-			player1->playWalkUp();
-		} else if (player1Velocity.y == 0) {
-			player1->stayIdle(false);
-		} else if (player1Velocity.y < 0) {
-			player1->playWalkDown();
-		}
-	}
-
 	player2->setScore(player2Score);
 
 	if (role == Role::CLIENT1) {
@@ -583,5 +595,22 @@ void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, i
 		} else if (player2Velocity.y < 0) {
 			player2->playWalkDown();
 		}
+
+		// TODO: Add player1 position correction for client prediction
 	}
+
+	if (role == Role::CLIENT2) {
+		player1->setPosition(player1Position);
+
+		if (player1Velocity.y > 0) {
+			player1->playWalkUp();
+		} else if (player1Velocity.y == 0) {
+			player1->stayIdle(false);
+		} else if (player1Velocity.y < 0) {
+			player1->playWalkDown();
+		}
+
+		// TODO: Add player2 position correction for client prediction
+	}
+
 }
