@@ -557,11 +557,10 @@ void GameScene::sendFire(Role origin, Point point)
 
 void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
-	player1->setPosition(player1Position);
 	player1->setScore(player1Score);
 
 	if (role == Role::CLIENT2) {
-		player2->getPhysicsBody()->setVelocity(player2Velocity);
+		player1->setPosition(player1Position);
 
 		if (player1Velocity.y > 0) {
 			player1->playWalkUp();
@@ -572,11 +571,10 @@ void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, i
 		}
 	}
 
-	player2->setPosition(player2Position);
 	player2->setScore(player2Score);
 
 	if (role == Role::CLIENT1) {
-		player1->getPhysicsBody()->setVelocity(player1Velocity);
+		player2->setPosition(player2Position);
 
 		if (player2Velocity.y > 0) {
 			player2->playWalkUp();

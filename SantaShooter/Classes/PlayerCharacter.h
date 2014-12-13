@@ -41,6 +41,13 @@ private:
 		return v;
 	}
 
+	enum class AnimationState
+	{
+		IDLE,
+		UP,
+		DOWN,
+	};
+
 public:
 	// Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
 	virtual bool init();
@@ -65,6 +72,7 @@ public:
 	CC_SYNTHESIZE(int, score, Score);
 	CC_SYNTHESIZE(int64_t, lastAckTimestamp, LastAckTimestamp);
 	CC_SYNTHESIZE(KeyInput, keyInput, KeyInput);
+	CC_SYNTHESIZE(AnimationState, animationState, AnimationState);
 
 	void playWalkUp();
 	void playWalkDown();

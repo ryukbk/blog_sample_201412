@@ -12,6 +12,7 @@ bool PlayerCharacter::init()
 		return false;
 	}
 
+	animationState = AnimationState::IDLE;
 	lastAckTimestamp = 0;
 	score = 0;
 
@@ -87,6 +88,10 @@ void PlayerCharacter::move(bool up)
 
 void PlayerCharacter::playWalkUp()
 {
+	if (animationState == AnimationState::UP) {
+		return;
+	}
+
 	idleRight->setVisible(false);
 
 	walkDownAnimation->pause();
@@ -95,11 +100,17 @@ void PlayerCharacter::playWalkUp()
 	walkUp->setVisible(true);
 	walkUpAnimation->gotoFrameAndPlay(0, true);
 
+	animationState = AnimationState::UP;
+
 	move(true);
 }
 
 void PlayerCharacter::playWalkDown()
 {
+	if (animationState == AnimationState::DOWN) {
+		return;
+	}
+
 	idleRight->setVisible(false);
 
 	walkUpAnimation->pause();
@@ -108,11 +119,15 @@ void PlayerCharacter::playWalkDown()
 	walkDown->setVisible(true);
 	walkDownAnimation->gotoFrameAndPlay(0, true);
 
+	animationState = AnimationState::DOWN;
+
 	move(false);
 }
 
 void PlayerCharacter::stayIdle(bool flipped)
 {
+	animationState = AnimationState::IDLE;
+
 #ifdef MOVE_WITH_PHYSICS
 	if (this->getPhysicsBody() != nullptr) {
 		this->getPhysicsBody()->setVelocity(Vec2::ZERO);
