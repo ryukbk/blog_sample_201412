@@ -376,6 +376,12 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			if (role == Role::SERVER) {
 				gameStartTime = std::chrono::high_resolution_clock::now();
 			} else {
+				if (role == Role::CLIENT1) {
+					player2->removePhysics();
+				} else if (role == Role::CLIENT2) {
+					player1->removePhysics();
+				}
+
 				gameStartTime = std::chrono::high_resolution_clock::now();
 				sendPing();
 			}
@@ -550,7 +556,27 @@ void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, i
 	player1->getPhysicsBody()->setVelocity(player1Velocity);
 	player1->setScore(player1Score);
 
+	if (role == Role::CLIENT2) {
+		if (player1Velocity.y > 0) {
+			player1->playWalkUp();
+		} else if (player1Velocity.y == 0) {
+			player1->stayIdle(false);
+		} else if (player1Velocity.y < 0) {
+			player1->playWalkDown();
+		}
+	}
+
 	player2->setPosition(player2Position);
 	player2->getPhysicsBody()->setVelocity(player2Velocity);
 	player2->setScore(player2Score);
+
+	if (role == Role::CLIENT1) {
+		if (player2Velocity.y > 0) {
+			player2->playWalkUp();
+		} else if (player2Velocity.y == 0) {
+			player2->stayIdle(true);
+		} else if (player2Velocity.y < 0) {
+			player2->playWalkDown();
+		}
+	}
 }
