@@ -257,6 +257,10 @@ void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, coco
 
 bool GameScene::onContactBegin(const PhysicsContact& contact)
 {
+	if (role != Role::SERVER && role != Role::UNINITIALIZED) {
+		return true;
+	}
+
 	std::string nameA = contact.getShapeA()->getBody()->getNode()->getName();
 	std::string nameB = contact.getShapeB()->getBody()->getNode()->getName();
 
@@ -416,9 +420,17 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			if (origin == Role::CLIENT1) {
 				player1->setPingTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - player1->getPingStartTime()).count());
 				player1->setHandShakeDone(true);
+				std::string log("Player 1 ping: ");
+				std::stringstream ss;
+				ss << player1->getPingTime();
+				addConsoleText(log + ss.str());
 			} else if (origin == Role::CLIENT2) {
 				player2->setPingTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - player2->getPingStartTime()).count());
 				player2->setHandShakeDone(true);
+				std::string log("Player 2 ping: ");
+				std::stringstream ss;
+				ss << player2->getPingTime();
+				addConsoleText(log + ss.str());
 			}
 			break;
 		case Opcode::WORLD_STATE:
@@ -434,17 +446,29 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			}
 			break;
 		case Opcode::KEY_INPUT:
-			{
-				if (origin == Role::CLIENT1) {
-					player1->setKeyInput((KeyInput)(json["a0"].GetInt()));
-				} else if (origin == Role::CLIENT2) {
-					player2->setKeyInput((KeyInput)(json["a0"].GetInt()));
-				}
+			if (origin == Role::CLIENT1) {
+				player1->setKeyInput((KeyInput)(json["a0"].GetInt()));
+			} else if (origin == Role::CLIENT2) {
+				player2->setKeyInput((KeyInput)(json["a0"].GetInt()));
 			}
 			break;
 		case Opcode::FIRE:
 			{
-				
+				Size visibleSize = Director::getInstance()->getVisibleSize();
+				auto spriteFrameCache = SpriteFrameCache::getInstance();
+				if (role == Role::SERVER) {
+					if (origin == Role::CLIENT1) {
+						player1->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player2->getContactBitMask());
+						sendFire(Role::CLIENT2, Point(json["a0"].GetDouble(), json["a1"].GetDouble()));
+					} else if (origin == Role::CLIENT2) {
+						player2->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player1->getContactBitMask());
+						sendFire(Role::CLIENT1, Point(json["a0"].GetDouble(), json["a1"].GetDouble()));
+					}
+				} else if (role == Role::CLIENT1) {
+					player2->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player1->getContactBitMask());
+				} else if (role == Role::CLIENT2) {
+					player1->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player2->getContactBitMask());
+				}
 			}
 			break;
 		}
@@ -582,8 +606,12 @@ void GameScene::sendFire(Role origin, Point point)
 
 void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
-	player1->setScore(player1Score);
-	player2->setScore(player2Score);
+	if (player1->getScore() != player1Score || player2->getScore() != player2Score) {
+		player1->setScore(player1Score);
+		player2->setScore(player2Score);
+
+		updateScore();
+	}
 
 	if (role == Role::CLIENT1) {
 		player2->setPosition(player2Position);
