@@ -363,6 +363,14 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		int64_t timestamp = json["t"].GetInt64();
 		int64_t ackTimestamp = json["a"].GetInt64();
 
+		if (role == Role::SERVER) {
+			if (origin == Role::CLIENT1) {
+				player1->setLastAckTimestamp(timestamp);
+			} else if (origin == Role::CLIENT2) {
+				player2->setLastAckTimestamp(timestamp);
+			}
+		}
+
 		if (role == Role::CLIENT1 || role == Role::CLIENT2) {
 			lastAckTimeAsClient = timestamp;
 		}
@@ -373,9 +381,8 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 
 			updateStatus();
 
-			if (role == Role::SERVER) {
-				gameStartTime = std::chrono::high_resolution_clock::now();
-			} else {
+			gameStartTime = std::chrono::high_resolution_clock::now();
+			if (role != Role::SERVER) {
 				if (role == Role::CLIENT1) {
 					player2->removePhysics();
 				} else if (role == Role::CLIENT2) {
@@ -388,12 +395,6 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			break;
 		case Opcode::PING:
 			{
-				if (origin == Role::CLIENT1) {
-					player1->setLastAckTimestamp(timestamp);
-				} else if (origin == Role::CLIENT2) {
-					player2->setLastAckTimestamp(timestamp);
-				}
-
 				sendPong(origin, timestamp);
 			}
 			break;
@@ -404,18 +405,22 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		case Opcode::WORLD_STATE:
 			{
 				acceptWorldState(
-					Point(json["a0"].GetInt(), json["a1"].GetInt()),
-					Point(json["a2"].GetInt(), json["a3"].GetInt()),
+					Point(json["a0"].GetDouble(), json["a1"].GetDouble()),
+					Point(json["a2"].GetDouble(), json["a3"].GetDouble()),
 					json["a4"].GetInt(),
-					Point(json["a5"].GetInt(), json["a6"].GetInt()),
-					Point(json["a7"].GetInt(), json["a8"].GetInt()),
+					Point(json["a5"].GetDouble(), json["a6"].GetDouble()),
+					Point(json["a7"].GetDouble(), json["a8"].GetDouble()),
 					json["a9"].GetInt()
 				);
 			}
 			break;
 		case Opcode::KEY_INPUT:
 			{
-
+				if (origin == Role::CLIENT1) {
+					player1->setKeyInput((KeyInput)(json["a0"].GetInt()));
+				} else if (origin == Role::CLIENT2) {
+					player2->setKeyInput((KeyInput)(json["a0"].GetInt()));
+				}
 			}
 			break;
 		case Opcode::FIRE:
@@ -528,15 +533,15 @@ void GameScene::sendWorldState(Role target, int64_t knownTimestamp)
 		Opcode::WORLD_STATE,
 		knownTimestamp,
 		target,
-		player1->getPosition().x,
-		player1->getPosition().y,
-		player1->getPhysicsBody()->getVelocity().x,
-		player1->getPhysicsBody()->getVelocity().y,
+		double(player1->getPosition().x),
+		double(player1->getPosition().y),
+		double(player1->getPhysicsBody()->getVelocity().x),
+		double(player1->getPhysicsBody()->getVelocity().y),
 		player1->getScore(),
-		player2->getPosition().x,
-		player2->getPosition().y,
-		player2->getPhysicsBody()->getVelocity().x,
-		player2->getPhysicsBody()->getVelocity().y,
+		double(player2->getPosition().x),
+		double(player2->getPosition().y),
+		double(player2->getPhysicsBody()->getVelocity().x),
+		double(player2->getPhysicsBody()->getVelocity().y),
 		player2->getScore()
 	));
 }
@@ -553,10 +558,11 @@ void GameScene::sendFire(Role origin, Point point)
 void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
 	player1->setPosition(player1Position);
-	player1->getPhysicsBody()->setVelocity(player1Velocity);
 	player1->setScore(player1Score);
 
 	if (role == Role::CLIENT2) {
+		player2->getPhysicsBody()->setVelocity(player2Velocity);
+
 		if (player1Velocity.y > 0) {
 			player1->playWalkUp();
 		} else if (player1Velocity.y == 0) {
@@ -567,10 +573,11 @@ void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, i
 	}
 
 	player2->setPosition(player2Position);
-	player2->getPhysicsBody()->setVelocity(player2Velocity);
 	player2->setScore(player2Score);
 
 	if (role == Role::CLIENT1) {
+		player1->getPhysicsBody()->setVelocity(player1Velocity);
+
 		if (player2Velocity.y > 0) {
 			player2->playWalkUp();
 		} else if (player2Velocity.y == 0) {

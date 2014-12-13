@@ -21,10 +21,12 @@ wss.on('connection', function(ws) {
 	}
 
 	ws.on('message', function(message) {
-		console.log(message);
-
 		if (ws === wss.clients[0]) {
 			var json = JSON.parse(message);
+			if (json.o != 3) {
+				console.log(message);
+			}
+
 			if (json.d == 2) {
 				if (wss.clients[1] != null) {
 					wss.clients[1].send(message);
