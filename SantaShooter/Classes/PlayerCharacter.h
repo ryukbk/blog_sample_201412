@@ -63,6 +63,7 @@ public:
 	CC_SYNTHESIZE(cocostudio::timeline::ActionTimeline*, walkDownAnimation, WalkDownAnimation);
 	CC_SYNTHESIZE(int, contactBitMask, ContactBitMask);
 	CC_SYNTHESIZE(int, score, Score);
+	CC_SYNTHESIZE(int64_t, lastAckTimestamp, LastAckTimestamp);
 	CC_SYNTHESIZE(KeyInput, keyInput, KeyInput);
 
 	void playWalkUp();

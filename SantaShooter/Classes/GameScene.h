@@ -45,7 +45,6 @@ private:
 	Role role = Role::UNINITIALIZED;
 	std::deque<std::string> consoleLines;
 	std::chrono::high_resolution_clock::time_point gameStartTime;
-	long long pingTime;
 
 	void setupPlayers();
 	void updateStatus();
@@ -65,13 +64,14 @@ private:
 	}
 
 	template<class... Ts>
-	std::string createMessage(Opcode opcode, Role target, Ts... args)
+	std::string createMessage(Opcode opcode, int64_t lastAckTimestamp, Role target, Ts... args)
 	{
 		rapidjson::Document json;
 		json.SetObject();
 
 		json.AddMember("o", (int)opcode, json.GetAllocator());
 		json.AddMember("t", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - gameStartTime).count(), json.GetAllocator());
+		json.AddMember("a", lastAckTimestamp, json.GetAllocator());
 		json.AddMember("d", (int)target, json.GetAllocator());
 
 		// Initializer list with always more than 0 elements.
@@ -96,8 +96,8 @@ private:
 	void sendKeyInput(Role origin, KeyInput keyInput);
 
 	// Server messages
-	void sendPong(Role target);
-	void sendWorldState();
+	void sendPong(Role target, int64_t knownTimestamp);
+	void sendWorldState(Role target, int64_t knownTimestamp);
 	void sendFire(Role origin, cocos2d::Point point);
 
 	void acceptWorldState(
@@ -127,5 +127,8 @@ public:
 
 	CC_SYNTHESIZE(PlayerCharacter*, player1, Player1);
 	CC_SYNTHESIZE(PlayerCharacter*, player2, Player2);
+
+	CC_SYNTHESIZE(int64_t, lastAckTimeAsClient, LastAckTimeAsClient);
+	CC_SYNTHESIZE(int64_t, pingTime, PingTime);
 };
 

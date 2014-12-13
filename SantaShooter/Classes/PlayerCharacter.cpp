@@ -12,6 +12,7 @@ bool PlayerCharacter::init()
 		return false;
 	}
 
+	lastAckTimestamp = 0;
 	score = 0;
 
 	auto spriteFrameCache = SpriteFrameCache::getInstance();

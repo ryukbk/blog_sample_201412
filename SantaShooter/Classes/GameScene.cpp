@@ -30,6 +30,9 @@ bool GameScene::init()
 		return false;
 	}
 
+	lastAckTimeAsClient = 0;
+	pingTime = 0;
+
 	this->scheduleUpdate();
 
 	std::string fullPath = FileUtils::getInstance()->fullPathForFilename("CloseNormal.png");
@@ -175,7 +178,8 @@ void GameScene::update(float deltaTime)
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
 
 	if (role == Role::SERVER) {
-		sendWorldState();
+		sendWorldState(Role::CLIENT1, player1->getLastAckTimestamp());
+		sendWorldState(Role::CLIENT2, player2->getLastAckTimestamp());
 	}
 }
 
@@ -355,10 +359,17 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		}
 
 		auto opcode = (Opcode)json["o"].GetInt();
-		Role target = Role(json["d"].GetInt());
+		Role origin = Role(json["d"].GetInt());
+		int64_t timestamp = json["t"].GetInt64();
+		int64_t ackTimestamp = json["a"].GetInt64();
+
+		if (role == Role::CLIENT1 || role == Role::CLIENT2) {
+			lastAckTimeAsClient = timestamp;
+		}
+
 		switch (opcode) {
 		case Opcode::HELLO:
-			role = target;
+			role = origin;
 
 			updateStatus();
 
@@ -371,7 +382,13 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 			break;
 		case Opcode::PING:
 			{
-				sendPong(target);
+				if (origin == Role::CLIENT1) {
+					player1->setLastAckTimestamp(timestamp);
+				} else if (origin == Role::CLIENT2) {
+					player2->setLastAckTimestamp(timestamp);
+				}
+
+				sendPong(origin, timestamp);
 			}
 			break;
 		case Opcode::PONG:
@@ -483,27 +500,28 @@ void GameScene::send(const std::string& message)
 
 void GameScene::sendPing()
 {
-	send(createMessage(Opcode::PING, role));
+	send(createMessage(Opcode::PING, lastAckTimeAsClient, role));
 }
 
 void GameScene::sendKeyInput(Role origin, KeyInput keyInput)
 {
-	send(createMessage(Opcode::KEY_INPUT, origin, (int)keyInput));
+	send(createMessage(Opcode::KEY_INPUT, lastAckTimeAsClient, origin, (int)keyInput));
 }
 
-void GameScene::sendPong(Role target)
+void GameScene::sendPong(Role target, int64_t knownTimestamp)
 {
-	send(createMessage(Opcode::PONG, target));
+	send(createMessage(Opcode::PONG, knownTimestamp, target));
 }
 
-void GameScene::sendWorldState()
+void GameScene::sendWorldState(Role target, int64_t knownTimestamp)
 {
 	// [world state]
 	// * player1 : position, velocity, score
 	// * player2 : position, velocity, score
 	send(createMessage(
 		Opcode::WORLD_STATE,
-		Role::ALL_CLIENTS,
+		knownTimestamp,
+		target,
 		player1->getPosition().x,
 		player1->getPosition().y,
 		player1->getPhysicsBody()->getVelocity().x,
@@ -519,7 +537,11 @@ void GameScene::sendWorldState()
 
 void GameScene::sendFire(Role origin, Point point)
 {
-	send(createMessage(Opcode::FIRE, origin, point.x, point.y));
+	if (origin == Role::CLIENT1) {
+		send(createMessage(Opcode::FIRE, player1->getLastAckTimestamp(), origin, point.x, point.y));
+	} else if (origin == Role::CLIENT2) {
+		send(createMessage(Opcode::FIRE, player2->getLastAckTimestamp(), origin, point.x, point.y));
+	}
 }
 
 void GameScene::acceptWorldState(Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
