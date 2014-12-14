@@ -704,6 +704,9 @@ void GameScene::acceptAuthoritativeWorldState(
 
 void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point authoritativePlayerPosition, Point authoritativePlayerVelocity, int64_t lastAckTimestamp)
 {
+	player->setPosition(authoritativePlayerPosition);
+
+	/*
 	if (clientActionLog.empty()) {
 		player->setPosition(authoritativePlayerPosition);
 		return;
@@ -724,18 +727,11 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 
 		int64_t currentTime = getCurrentTimestamp();
 		if (clientActionLog.empty()) {
-			std::string log("Rewind & step: ");
-			std::stringstream ss;
-			ss << distance << " time:" << float(currentTime - lastAckTimestamp - pingTime);
-			log += ss.str();
+			std::string log("Correction");
 			addConsoleText(log);
 
 			player->setPosition(authoritativePlayerPosition);
 			player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
-
-			if (float(currentTime - lastAckTimestamp - pingTime) > 0) {
-				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - lastAckTimestamp - pingTime));
-			}
 		} else {
 			std::string log("Rewind & replay: ");
 			std::stringstream ss;
@@ -773,5 +769,6 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 			}
 		}
 	}
+	*/
 }
 

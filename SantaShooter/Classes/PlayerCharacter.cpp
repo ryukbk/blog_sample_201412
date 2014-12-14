@@ -57,7 +57,7 @@ void PlayerCharacter::addPhysics()
 	auto boxBody = PhysicsBody::createBox(Size(originalSize.width * PLAYER_SCALE, originalSize.height * PLAYER_SCALE));
 	boxBody->setDynamic(true);
 	boxBody->setRotationEnable(false);
-	boxBody->setMass(PHYSICS_INFINITY);
+	boxBody->setMass(0);
 
 	contactBitMask = getNewContactBitMask();
 	boxBody->setContactTestBitmask(contactBitMask);
