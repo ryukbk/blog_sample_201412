@@ -694,7 +694,7 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 
 			for (auto action : clientActionLog) {
 				if (delta != 0) {
-					Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(std::get<0>(action) -delta));
+					Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(std::get<0>(action) - delta));
 				}
 
 				delta = std::get<0>(action);
