@@ -20,6 +20,7 @@
 #include "PlayerCharacter.h"
 
 static const int CLIENT_ACTION_LOG_CAPACITY = 180;
+static const float REPLAY_THRESHOLD = 10.0f;
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
@@ -124,6 +125,7 @@ private:
 		cocos2d::Point player1Position, cocos2d::Point player1Velocity, int player1Score,
 		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
 	);
+	void rewindAndReplayClientWorldState(PlayerCharacter* player, cocos2d::Point authoritativePlayerPosition, int64_t lastAckTimestamp);
 
 public:
 	static cocos2d::Scene* createScene();

@@ -631,66 +631,7 @@ void GameScene::acceptAuthoritativeWorldState(
 			player2->playWalkDown();
 		}
 
-		// TODO: Add player1 position correction for client prediction
-		float distance = 0;
-		for (auto action: clientActionLog) {
-			if (std::get<0>(action) == lastAckTimestamp) {
-				distance = std::get<2>(action).distance(player1Position);
-				break;
-			}
-		}
-
-		if (distance > 100.0f) {
-			while (!clientActionLog.empty() && std::get<0>(clientActionLog.front()) <= lastAckTimestamp)
-			{
-				clientActionLog.pop_front();
-			}
-
-			int64_t currentTime = getCurrentTimestamp();
-			if (clientActionLog.empty()) {
-				std::string log("Rewind & step: ");
-				std::stringstream ss;
-				ss << distance << " time:" << float(currentTime - lastAckTimestamp);
-				log += ss.str();
-				addConsoleText(log);
-
-				player1->setPosition(player1Position);
-				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - lastAckTimestamp));
-			} else {
-				std::string log("Rewind & replay: ");
-				std::stringstream ss;
-				ss << distance;
-				log += ss.str();
-				addConsoleText(log);
-
-				player1->toggleGiftboxPhysics(false);
-				int64_t delta = 0;
-
-				player1->setPosition(player1Position);
-
-				for (auto action: clientActionLog) {
-					if (delta != 0) {
-						Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(std::get<0>(action) - delta));
-					}
-
-					delta = std::get<0>(action);
-
-					if (std::get<1>(action) == KeyInput::UP) {
-						player1->move(true);
-					} else if (std::get<1>(action) == KeyInput::DOWN) {
-						player1->move(false);
-					} else if (std::get<1>(action) == KeyInput::STOP) {
-						player1->stop();
-					}
-				}
-
-				if (delta != 0) {
-					Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - delta));
-				}
-
-				player1->toggleGiftboxPhysics(true);
-			}
-		}
+		rewindAndReplayClientWorldState(player1, player1Position, lastAckTimestamp);
 	}
 
 	if (role == Role::CLIENT2) {
@@ -704,7 +645,79 @@ void GameScene::acceptAuthoritativeWorldState(
 			player1->playWalkDown();
 		}
 
-		// TODO: Add player2 position correction for client prediction
+		rewindAndReplayClientWorldState(player2, player2Position, lastAckTimestamp);
 	}
 
 }
+
+void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point authoritativePlayerPosition, int64_t lastAckTimestamp)
+{
+	if (clientActionLog.empty()) {
+		player->setPosition(authoritativePlayerPosition);
+		return;
+	}
+
+	float distance = 0;
+	for (auto action : clientActionLog) {
+		if (std::get<0>(action) == lastAckTimestamp) {
+			distance = std::get<2>(action).distance(authoritativePlayerPosition);
+			break;
+		}
+	}
+
+	if (distance > REPLAY_THRESHOLD) {
+		while (!clientActionLog.empty() && std::get<0>(clientActionLog.front()) <= lastAckTimestamp) {
+			clientActionLog.pop_front();
+		}
+
+		int64_t currentTime = getCurrentTimestamp();
+		if (clientActionLog.empty()) {
+			std::string log("Rewind & step: ");
+			std::stringstream ss;
+			ss << distance << " time:" << float(currentTime - lastAckTimestamp - pingTime);
+			log += ss.str();
+			addConsoleText(log);
+
+			player->setPosition(authoritativePlayerPosition);
+			Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - lastAckTimestamp - pingTime));
+		} else {
+			std::string log("Rewind & replay: ");
+			std::stringstream ss;
+			ss << distance << " with " << clientActionLog.size() << " logs: ";
+			log += ss.str();
+			addConsoleText(log);
+
+			player->toggleGiftboxPhysics(false);
+			int64_t delta = 0;
+
+			player->setPosition(authoritativePlayerPosition);
+
+			for (auto action : clientActionLog) {
+				if (delta != 0) {
+					Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(std::get<0>(action) -delta));
+				}
+
+				delta = std::get<0>(action);
+
+				switch (std::get<1>(action)) {
+				case KeyInput::UP:
+					player->move(true);
+					break;
+				case KeyInput::DOWN:
+					player->move(false);
+					break;
+				case KeyInput::STOP:
+					player->stop();
+					break;
+				}
+			}
+
+			if (delta != 0) {
+				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - delta));
+			}
+
+			player->toggleGiftboxPhysics(true);
+		}
+	}
+}
+
