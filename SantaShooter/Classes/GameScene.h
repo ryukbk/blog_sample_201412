@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <deque>
-#include <utility>
+#include <tuple>
 #include <memory>
 #include <chrono>
 #include <string>
@@ -48,12 +48,14 @@ private:
 
 	Role role = Role::UNINITIALIZED;
 
-	std::deque<std::pair<int64_t, KeyInput>> clientActionLog;
+	std::deque<std::tuple<int64_t, KeyInput, cocos2d::Point>> clientActionLog;
 
 	std::deque<std::string> consoleLines;
 
 	std::chrono::high_resolution_clock::time_point gameStartTime;
 	std::chrono::high_resolution_clock::time_point pingStartTime;
+
+	int64_t lastMessageCreatedTimestamp = 0;
 
 	inline int64_t getCurrentTimestamp()
 	{
@@ -83,8 +85,10 @@ private:
 		rapidjson::Document json;
 		json.SetObject();
 
+		lastMessageCreatedTimestamp = getCurrentTimestamp();
+
 		json.AddMember("o", (int)opcode, json.GetAllocator());
-		json.AddMember("t", getCurrentTimestamp(), json.GetAllocator());
+		json.AddMember("t", lastMessageCreatedTimestamp, json.GetAllocator());
 		json.AddMember("a", lastAckTimestamp, json.GetAllocator());
 		json.AddMember("d", (int)target, json.GetAllocator());
 
@@ -108,7 +112,7 @@ private:
 	// Client messages
 	void sendPing();
 	void sendHandshakeAck();
-	void sendKeyInput(Role origin, KeyInput keyInput);
+	void sendKeyInput(Role origin, KeyInput keyInput, cocos2d::Point simulationResultPosition);
 
 	// Server messages
 	void sendPong(Role target, int64_t knownTimestamp);
@@ -116,6 +120,7 @@ private:
 	void sendFire(Role origin, cocos2d::Point point);
 
 	void acceptAuthoritativeWorldState(
+		int64_t lastAckTimestamp,
 		cocos2d::Point player1Position, cocos2d::Point player1Velocity, int player1Score,
 		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
 	);
