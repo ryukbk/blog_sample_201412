@@ -20,7 +20,7 @@
 #include "PlayerCharacter.h"
 
 static const int CLIENT_ACTION_LOG_CAPACITY = 180;
-static const float REPLAY_THRESHOLD = 5.0f;
+static const float REPLAY_THRESHOLD = 1.0f;
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
@@ -49,7 +49,7 @@ private:
 
 	Role role = Role::UNINITIALIZED;
 
-	std::deque<std::tuple<int64_t, KeyInput, cocos2d::Point>> clientActionLog;
+	std::deque<std::tuple<int64_t, KeyInput, cocos2d::Point, cocos2d::Point>> clientActionLog;
 
 	std::deque<std::string> consoleLines;
 
@@ -113,7 +113,7 @@ private:
 	// Client messages
 	void sendPing();
 	void sendHandshakeAck();
-	void sendKeyInput(Role origin, KeyInput keyInput, cocos2d::Point simulationResultPosition);
+	void sendKeyInput(Role origin, KeyInput keyInput, cocos2d::Point simulationResultPosition, cocos2d::Point simulationResultVelocity);
 
 	// Server messages
 	void sendPong(Role target, int64_t knownTimestamp);
@@ -125,7 +125,7 @@ private:
 		cocos2d::Point player1Position, cocos2d::Point player1Velocity, int player1Score,
 		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
 	);
-	void rewindAndReplayClientWorldState(PlayerCharacter* player, cocos2d::Point authoritativePlayerPosition, int64_t lastAckTimestamp);
+	void rewindAndReplayClientWorldState(PlayerCharacter* player, cocos2d::Point authoritativePlayerPosition, cocos2d::Point authoritativePlayerVelocity, int64_t lastAckTimestamp);
 
 public:
 	static cocos2d::Scene* createScene();
