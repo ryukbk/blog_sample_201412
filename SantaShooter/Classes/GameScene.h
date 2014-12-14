@@ -20,6 +20,7 @@
 #include "PlayerCharacter.h"
 
 static const int CLIENT_ACTION_LOG_CAPACITY = 180;
+static const int SERVER_POSITION_LOG_CAPACITY = 180;
 static const float REPLAY_THRESHOLD = 1.0f;
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
@@ -44,6 +45,8 @@ private:
 		KEY_INPUT = 5,
 		FIRE = 6,
 	};
+
+	bool bailout = false;
 
 	cocos2d::network::WebSocket* websocket = nullptr;
 
@@ -126,6 +129,7 @@ private:
 		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
 	);
 	void rewindAndReplayClientWorldState(PlayerCharacter* player, cocos2d::Point authoritativePlayerPosition, cocos2d::Point authoritativePlayerVelocity, int64_t lastAckTimestamp);
+	cocos2d::Sprite* createLagCompensationHitbox(PlayerCharacter* player, PlayerCharacter* opponent);
 
 public:
 	static cocos2d::Scene* createScene();

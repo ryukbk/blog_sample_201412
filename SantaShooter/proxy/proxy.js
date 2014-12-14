@@ -2,6 +2,7 @@
 
 var WebSocketServer = require('ws').Server
 var wss = new WebSocketServer({port: 31337});
+var heapUsed = 0;
 
 wss.on('connection', function(ws) {
 	console.log(wss.clients.length.toString(), 'clients are connected');
@@ -51,6 +52,14 @@ wss.on('connection', function(ws) {
 
 	ws.on('close', function close() {
 		console.log(ws.name, 'disconnected');
+
+		var m = process.memoryUsage();
+		if (m.heapUsed > heapUsed) {
+			heapUsed = m.heapUsed;
+			console.log("Heap used increased:", m.heapUsed);
+		} else {
+			console.log("Heap used:", m.heapUsed);
+		}
 	});
 });
 

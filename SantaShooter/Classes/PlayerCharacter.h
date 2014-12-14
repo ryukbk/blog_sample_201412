@@ -2,6 +2,8 @@
 
 #include <string>
 #include <list>
+#include <deque>
+#include <utility>
 #include <algorithm>
 
 #include "cocos2d.h"
@@ -29,7 +31,8 @@ enum class KeyInput
 class PlayerCharacter : public cocos2d::Node
 {
 private:
-	std::list<cocos2d::Node*> giftboxes;
+	std::list<std::pair<cocos2d::Node*, cocos2d::Node*>> giftboxes;
+	std::deque<std::pair<int64_t, cocos2d::Point>> positionHistory;
 
 	static int currentContactBitMask;
 	static int getNewContactBitMask()
@@ -85,8 +88,13 @@ public:
 		cocos2d::Point touchPoint,
 		cocos2d::SpriteFrameCache* spriteFrameCache,
 		const cocos2d::Size& visibleSize,
-		int targetContactBitMask
+		int targetContactBitMask,
+		cocos2d::Sprite* hitbox
 	);
 
+	inline std::deque<std::pair<int64_t, cocos2d::Point>>& getPositionHistory()
+	{
+		return positionHistory;
+	}
 	void toggleGiftboxPhysics(bool enabled);
 };

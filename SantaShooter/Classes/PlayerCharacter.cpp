@@ -66,8 +66,10 @@ void PlayerCharacter::addPhysics()
 
 void PlayerCharacter::removePhysics()
 {
-	getPhysicsBody()->removeFromWorld();
-	setPhysicsBody(nullptr);
+	if (getPhysicsBody() != nullptr) {
+		getPhysicsBody()->removeFromWorld();
+		setPhysicsBody(nullptr);
+	}
 }
 
 void PlayerCharacter::move(bool up)
@@ -75,6 +77,11 @@ void PlayerCharacter::move(bool up)
 #ifdef MOVE_WITH_PHYSICS
 	if (this->getPhysicsBody() != nullptr) {
 		this->getPhysicsBody()->setVelocity(Vec2(0, up ? PLAYER_MOVE_SPEED_WITH_PHYSICS : - PLAYER_MOVE_SPEED_WITH_PHYSICS));
+	}
+
+	auto hitbox = getChildByName("hitbox");
+	if (hitbox != nullptr) {
+		hitbox->getPhysicsBody()->setVelocity(Vec2(0, up ? PLAYER_MOVE_SPEED_WITH_PHYSICS : - PLAYER_MOVE_SPEED_WITH_PHYSICS));
 	}
 #else
 	this->stopAllActions();
@@ -131,6 +138,11 @@ void PlayerCharacter::stop()
 	if (this->getPhysicsBody() != nullptr) {
 		this->getPhysicsBody()->setVelocity(Vec2::ZERO);
 	}
+
+	auto hitbox = getChildByName("hitbox");
+	if (hitbox != nullptr) {
+		this->getPhysicsBody()->setVelocity(Vec2::ZERO);
+	}
 #endif
 }
 
@@ -160,9 +172,23 @@ void PlayerCharacter::attack(
 	cocos2d::Point touchPoint,
 	cocos2d::SpriteFrameCache* spriteFrameCache,
 	const cocos2d::Size& visibleSize,
-	int targetContactBitMask
+	int targetContactBitMask,
+	cocos2d::Sprite* hitbox
 )
 {
+	if (hitbox != nullptr) {
+		auto originalPhysicsBody = getPhysicsBody();
+		Size originalSize = hitbox->getContentSize();
+		auto boxBody = PhysicsBody::createBox(Size(originalSize.width, originalSize.height));
+		boxBody->setDynamic(true);
+		boxBody->setRotationEnable(false);
+		boxBody->setMass(PHYSICS_INFINITY);
+		boxBody->setCollisionBitmask(0);
+		boxBody->setContactTestBitmask(originalPhysicsBody->getContactTestBitmask());
+		originalPhysicsBody->setCategoryBitmask(0);
+		hitbox->setPhysicsBody(boxBody);
+	}
+
 	auto giftbox = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("giftbox.png"));
 	giftbox->setScale(PLAYER_GIFTBOX_SCALE);
 
@@ -205,17 +231,21 @@ void PlayerCharacter::attack(
 	giftbox->runAction(sequence);
 #endif
 
-	giftboxes.push_back(giftbox);
+	giftboxes.push_back(std::make_pair(giftbox, hitbox));
 }
 
 void PlayerCharacter::cleanupGiftbox(float deltaTime)
 {
 	Size visibleSize = Director::getInstance()->getVisibleSize();
-	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [visibleSize](Node* giftbox)
+	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [visibleSize](std::pair<Node*, Node*> g)
 	{
+		Node* giftbox = g.first;
 		Point pos = giftbox->getPosition();
 		bool offscreen = (pos.x > visibleSize.width || pos.x < 0 || pos.y < 0 || pos.y > visibleSize.height);
 		if (offscreen) {
+			if (g.second != nullptr) {
+				g.second->removeFromParent();
+			}
 			giftbox->removeFromParent();
 		}
 
@@ -225,14 +255,20 @@ void PlayerCharacter::cleanupGiftbox(float deltaTime)
 
 void PlayerCharacter::removeFromGiftboxes(Node* giftbox)
 {
-	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [giftbox](Node* gb) {
-		return gb == giftbox;
+	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [giftbox](std::pair<Node*, Node*> g) {
+		if (g.first == giftbox) {
+			if (g.second != nullptr) {
+				g.second->removeFromParent();
+			}
+		}
+
+		return g.first == giftbox;
 	}), giftboxes.end());
 }
 
 void PlayerCharacter::toggleGiftboxPhysics(bool enabled)
 {
-	for (auto giftbox: giftboxes) {
-		giftbox->getPhysicsBody()->setEnable(enabled);
+	for (auto g: giftboxes) {
+		g.first->getPhysicsBody()->setEnable(enabled);
 	}
 }

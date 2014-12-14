@@ -180,16 +180,32 @@ void GameScene::update(float deltaTime)
 	if (role == Role::SERVER) {
 		if (player1->getHandShakeDone()) {
 			sendWorldState(Role::CLIENT1, player1->getLastAckTimestamp());
+
+			auto& positionHistory = player1->getPositionHistory();
+			positionHistory.push_front(std::make_pair(lastMessageCreatedTimestamp, player1->getPosition()));
+			if (positionHistory.size() > SERVER_POSITION_LOG_CAPACITY) {
+				positionHistory.pop_back();
+			}
 		}
 
 		if (player2->getHandShakeDone()) {
 			sendWorldState(Role::CLIENT2, player2->getLastAckTimestamp());
+
+			auto& positionHistory = player2->getPositionHistory();
+			positionHistory.push_front(std::make_pair(lastMessageCreatedTimestamp, player2->getPosition()));
+			if (positionHistory.size() > SERVER_POSITION_LOG_CAPACITY) {
+				positionHistory.pop_back();
+			}
 		}
 	}
 }
 
 void GameScene::addConsoleText(std::string text)
 {
+	if (bailout) {
+		return;
+	}
+
 	CCLOG(text.c_str());
 
 	consoleLines.push_back(text);
@@ -211,13 +227,20 @@ void GameScene::menuCloseCallback(Ref* pSender)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
 	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
-    return;
+	return;
 #endif
 
-    Director::getInstance()->end();
+	if (websocket != nullptr) {
+		websocket->close();
+		websocket = nullptr;
+	}
+
+	bailout = true;
+
+	Director::getInstance()->end();
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
+	exit(0);
 #endif
 }
 
@@ -230,7 +253,7 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, coco
 		if (touchPosition.x > visibleSize.width / 2) {
 			CCLOG("Player 1 attack");
 			if (role == Role::UNINITIALIZED || role == Role::CLIENT1) {
-				player1->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player2->getContactBitMask());
+				player1->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player2->getContactBitMask(), nullptr);
 			}
 			if (role == Role::CLIENT1) {
 				sendFire(role, touch->getLocation());
@@ -238,7 +261,7 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, coco
 		} else {
 			CCLOG("Player 2 attack");
 			if (role == Role::UNINITIALIZED || role == Role::CLIENT2) {
-				player2->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player1->getContactBitMask());
+				player2->attack(this, touch->getLocation(), spriteFrameCache, visibleSize, player1->getContactBitMask(), nullptr);
 			}
 			if (role == Role::CLIENT2) {
 				sendFire(role, touch->getLocation());
@@ -259,6 +282,10 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 {
 	if (role != Role::SERVER && role != Role::UNINITIALIZED) {
 		return true;
+	}
+
+	if (contact.getShapeA()->getBody()->getNode() == nullptr || contact.getShapeB()->getBody()->getNode() == nullptr) {
+		return false;
 	}
 
 	std::string nameA = contact.getShapeA()->getBody()->getNode()->getName();
@@ -458,22 +485,46 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 				Size visibleSize = Director::getInstance()->getVisibleSize();
 				auto spriteFrameCache = SpriteFrameCache::getInstance();
 				if (role == Role::SERVER) {
+					Sprite* hitbox = nullptr;
 					if (origin == Role::CLIENT1) {
-						player1->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player2->getContactBitMask());
+						hitbox = createLagCompensationHitbox(player1, player2);
+						player1->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player2->getContactBitMask(), hitbox);
 						sendFire(Role::CLIENT2, Point(json["a0"].GetDouble(), json["a1"].GetDouble()));
 					} else if (origin == Role::CLIENT2) {
-						player2->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player1->getContactBitMask());
+						hitbox = createLagCompensationHitbox(player2, player1);
+						player2->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player1->getContactBitMask(), hitbox);
 						sendFire(Role::CLIENT1, Point(json["a0"].GetDouble(), json["a1"].GetDouble()));
 					}
 				} else if (role == Role::CLIENT1) {
-					player2->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player1->getContactBitMask());
+					player2->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player1->getContactBitMask(), nullptr);
 				} else if (role == Role::CLIENT2) {
-					player1->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player2->getContactBitMask());
+					player1->attack(this, Point(json["a0"].GetDouble(), json["a1"].GetDouble()), spriteFrameCache, visibleSize, player2->getContactBitMask(), nullptr);
 				}
 			}
 			break;
 		}
 	}
+}
+
+cocos2d::Sprite* GameScene::createLagCompensationHitbox(PlayerCharacter* player, PlayerCharacter* opponent)
+{
+	Sprite* hitbox = nullptr;
+	int64_t fireTime = getCurrentTimestamp() - player->getPingTime() / 2;
+	auto positionHistory = opponent->getPositionHistory();
+	for (auto history : positionHistory) {
+		if (history.first < fireTime) {
+			auto spriteFrameCache = SpriteFrameCache::getInstance();
+			hitbox = Sprite::createWithSpriteFrame(spriteFrameCache->getSpriteFrameByName("slice12_12.png"));
+			hitbox->setVisible(false);
+
+			opponent->addChild(hitbox, 0, "hitbox");
+			hitbox->setPosition(history.second - opponent->getPosition());
+
+			break;
+		}
+	}
+
+	return hitbox;
 }
 
 void GameScene::onClose(cocos2d::network::WebSocket* ws)
@@ -541,6 +592,7 @@ void GameScene::updateScore()
 
 	std::stringstream ss2;
 	ss2 << player2->getScore();
+
 	score2text->setString(ss2.str());
 }
 
@@ -680,7 +732,10 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 
 			player->setPosition(authoritativePlayerPosition);
 			player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
-			Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - lastAckTimestamp - pingTime));
+
+			if (float(currentTime - lastAckTimestamp - pingTime) > 0) {
+				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - lastAckTimestamp - pingTime));
+			}
 		} else {
 			std::string log("Rewind & replay: ");
 			std::stringstream ss;
@@ -688,7 +743,6 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 			log += ss.str();
 			addConsoleText(log);
 
-			player->toggleGiftboxPhysics(false);
 			int64_t delta = 0;
 
 			player->setPosition(authoritativePlayerPosition);
@@ -717,8 +771,6 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 			if (delta != 0) {
 				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - delta));
 			}
-
-			player->toggleGiftboxPhysics(true);
 		}
 	}
 }
