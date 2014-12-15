@@ -715,8 +715,8 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 			distance = std::get<2>(action).distance(authoritativePlayerPosition);
 			if (distance != 0) {
 				std::stringstream ss;
-				ss << distance;
-				std::string log("Simulation discrepancy found: ");
+				ss << distance << " at " << lastAckTimestamp;
+				std::string log("Discrepancy: ");
 				addConsoleText(log + ss.str());
 			}
 			break;
