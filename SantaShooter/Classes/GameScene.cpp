@@ -704,9 +704,6 @@ void GameScene::acceptAuthoritativeWorldState(
 
 void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point authoritativePlayerPosition, Point authoritativePlayerVelocity, int64_t lastAckTimestamp)
 {
-	player->setPosition(authoritativePlayerPosition);
-
-	/*
 	if (clientActionLog.empty()) {
 		player->setPosition(authoritativePlayerPosition);
 		return;
@@ -716,11 +713,17 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 	for (auto action : clientActionLog) {
 		if (std::get<0>(action) == lastAckTimestamp) {
 			distance = std::get<2>(action).distance(authoritativePlayerPosition);
+			if (distance != 0) {
+				std::stringstream ss;
+				ss << distance;
+				std::string log("Simulation discrepancy found: ");
+				addConsoleText(log + ss.str());
+			}
 			break;
 		}
 	}
 
-	if (distance > REPLAY_THRESHOLD) {
+	if (distance != 0) {
 		while (!clientActionLog.empty() && std::get<0>(clientActionLog.front()) <= lastAckTimestamp) {
 			clientActionLog.pop_front();
 		}
@@ -769,6 +772,5 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 			}
 		}
 	}
-	*/
 }
 

@@ -21,7 +21,6 @@
 
 static const int CLIENT_ACTION_LOG_CAPACITY = 180;
 static const int SERVER_POSITION_LOG_CAPACITY = 180;
-static const float REPLAY_THRESHOLD = 5.0f;
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
