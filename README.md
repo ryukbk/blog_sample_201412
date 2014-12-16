@@ -12,6 +12,9 @@ Setup
 * Mac: Xcode 6.1.1 (Mac, non-iOS)
 * node.js v0.10.33
 
+node.js proxy
+---
+
     $ cd proxy/node_modules
     $ npm build ws
     $ cd ..
