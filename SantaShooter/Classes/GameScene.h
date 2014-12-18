@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <deque>
+#include <algorithm>
 #include <tuple>
 #include <memory>
 #include <chrono>
@@ -47,6 +48,7 @@ private:
 		WORLD_STATE = 4,
 		KEY_INPUT = 5,
 		FIRE = 6,
+		REMOVE_GIFTBOX = 7,
 	};
 
 	bool bailout = false;
@@ -75,16 +77,14 @@ private:
 	void updateScore();
 
 	template<class T>
-	int addKV(const T& value, rapidjson::Document& json, std::deque<std::string>& keys)
+	void addKV(const T& value, rapidjson::Document& json, std::deque<std::string>& keys)
 	{
-		int n = 0;
 		std::stringstream ss;
 		ss << "a" << keys.size();
 		keys.push_back(ss.str());
 
 		// While iterators can be invalidated on insert into deque, references are not
 		json.AddMember(keys.back().c_str(), value, json.GetAllocator());
-		return n;
 	}
 
 	template<class... Ts>
@@ -126,6 +126,7 @@ private:
 	// Server message actions
 	void sendPong(Role target, int64_t ackTickSequence);
 	void sendWorldState(Role target, int64_t ackTickSequence);
+	void sendRemoveGiftbox(Role target, int64_t ackTickSequence, int64_t giftboxId);
 
 	void addClientActionLog(PlayerCharacter* player);
 	void acceptAuthoritativeWorldState(

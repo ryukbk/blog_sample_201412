@@ -201,7 +201,10 @@ void PlayerCharacter::attack(
 	boxBody->setContactTestBitmask(targetContactBitMask);
 	giftbox->setPhysicsBody(boxBody);
 
-	giftbox->setName("giftbox");
+	static const std::string giftboxPrefix = "giftbox_";
+	std::stringstream ss;
+	ss << giftboxPrefix << giftboxIdCounter++;
+	giftbox->setName(ss.str());
 
 	Point start = getPosition();
 	
@@ -263,6 +266,24 @@ void PlayerCharacter::removeFromGiftboxes(Node* giftbox)
 		}
 
 		return g.first == giftbox;
+	}), giftboxes.end());
+}
+
+void PlayerCharacter::removeFromGiftboxesById(int64_t id)
+{
+	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [id](std::pair<Node*, Node*> g) {
+		std::stringstream ss;
+		ss << "giftbox_" << id;
+		bool matched = false;
+		if (g.first->getName() == ss.str()) {
+			matched = true;
+			if (g.second != nullptr) {
+				g.second->removeFromParent();
+			}
+			g.first->removeFromParent();
+		}
+
+		return matched;
 	}), giftboxes.end());
 }
 

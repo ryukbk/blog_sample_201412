@@ -309,7 +309,12 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 
 	CCLOG(log.c_str());
 
-	if (nameA == "giftbox") {
+	static const std::string giftboxPrefix = "giftbox_";
+	if (std::mismatch(giftboxPrefix.begin(), giftboxPrefix.end(), nameA.begin()).first == giftboxPrefix.end()) {
+		int64_t giftboxId;
+		std::stringstream ss(nameA.substr(8));
+		ss >> giftboxId;
+
 		Node* giftbox = contact.getShapeA()->getBody()->getNode();
 		if (nameB == "player2") {
 			player1->setScore(player1->getScore() + 10);
@@ -317,14 +322,22 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
 			giftbox->removeFromParent();
+
+			sendRemoveGiftbox(Role::CLIENT1, player1->getLastAckTickSequence(), giftboxId);
 		} else if (nameB == "player1") {
 			player2->setScore(player2->getScore() + 10);
 			updateScore();
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
 			giftbox->removeFromParent();
+
+			sendRemoveGiftbox(Role::CLIENT2, player2->getLastAckTickSequence(), giftboxId);
 		}
-	} else if (nameB == "giftbox") {
+	} else if (std::mismatch(giftboxPrefix.begin(), giftboxPrefix.end(), nameB.begin()).first == giftboxPrefix.end()) {
+		int64_t giftboxId;
+		std::stringstream ss(nameB.substr(8));
+		ss >> giftboxId;
+
 		Node* giftbox = contact.getShapeB()->getBody()->getNode();
 		if (nameA == "player2") {
 			player1->setScore(player1->getScore() + 10);
@@ -332,12 +345,16 @@ bool GameScene::onContactBegin(const PhysicsContact& contact)
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
 			giftbox->removeFromParent();
+
+			sendRemoveGiftbox(Role::CLIENT2, player2->getLastAckTickSequence(), giftboxId);
 		} else if (nameA == "player1") {
 			player2->setScore(player2->getScore() + 10);
 			updateScore();
 			player1->removeFromGiftboxes(giftbox);
 			player2->removeFromGiftboxes(giftbox);
 			giftbox->removeFromParent();
+
+			sendRemoveGiftbox(Role::CLIENT1, player1->getLastAckTickSequence(), giftboxId);
 		}
 	}
 
@@ -512,6 +529,16 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 				}
 			}
 			break;
+		case Opcode::REMOVE_GIFTBOX:
+			{
+				int64_t giftboxId = json["a0"].GetDouble();
+				if (origin == Role::CLIENT1) {
+					player1->removeFromGiftboxesById(giftboxId);
+				} else if (origin == Role::CLIENT2) {
+					player2->removeFromGiftboxesById(giftboxId);
+				}
+			}
+			break;
 		}
 	}
 }
@@ -631,6 +658,11 @@ void GameScene::sendPong(Role target, int64_t ackTickSequence)
 	send(createMessage(Opcode::PONG, ackTickSequence, target));
 }
 
+void GameScene::sendRemoveGiftbox(Role target, int64_t ackTickSequence, int64_t giftboxId)
+{
+	send(createMessage(Opcode::REMOVE_GIFTBOX, ackTickSequence, target, giftboxId));
+}
+
 void GameScene::sendHandshakeAck()
 {
 	send(createMessage(Opcode::HANDSHAKE_ACK, lastAckTickFromServer, role));
@@ -712,7 +744,6 @@ void GameScene::acceptAuthoritativeWorldState(
 
 		rewindAndReplayClientWorldState(player2, player2Position, player2Velocity, lastAckTickSequence);
 	}
-
 }
 
 void GameScene::rewindAndReplayClientWorldState(

@@ -40,6 +40,8 @@ private:
 
 	std::deque<std::pair<int64_t, cocos2d::Point>> positionHistory;
 
+	int64_t giftboxIdCounter = 0;
+
 	static int currentContactBitMask;
 	static int getNewContactBitMask()
 	{
@@ -69,6 +71,7 @@ public:
 
 	void cleanupGiftbox(float deltaTime);
 	void removeFromGiftboxes(Node* giftbox);
+	void removeFromGiftboxesById(int64_t id);
 
 	CC_SYNTHESIZE(cocos2d::Sprite*, idleRight, IdleRight);
 	CC_SYNTHESIZE(cocos2d::Node*, walkUp, WalkUp);
