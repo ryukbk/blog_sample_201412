@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <deque>
+#include <algorithm>
 #include <tuple>
 #include <memory>
 #include <chrono>
@@ -19,8 +20,12 @@
 
 #include "PlayerCharacter.h"
 
-static const int CLIENT_ACTION_LOG_CAPACITY = 180;
+static const int CONSOLE_LOG_LINES = 10;
+
+static const int CLIENT_ACTION_LOG_CAPACITY = 360;
 static const int SERVER_POSITION_LOG_CAPACITY = 180;
+
+static const float REWIND_DISTANCE_THRESHOLD = 0.5f;
 
 class GameScene : public cocos2d::Node, public cocos2d::network::WebSocket::Delegate
 {
@@ -43,6 +48,7 @@ private:
 		WORLD_STATE = 4,
 		KEY_INPUT = 5,
 		FIRE = 6,
+		REMOVE_GIFTBOX = 7,
 	};
 
 	bool bailout = false;
@@ -59,6 +65,7 @@ private:
 	std::chrono::high_resolution_clock::time_point pingStartTime;
 
 	int64_t lastMessageCreatedTimestamp = 0;
+	int64_t tickSequence = 0;
 
 	inline int64_t getCurrentTimestamp()
 	{
@@ -70,29 +77,27 @@ private:
 	void updateScore();
 
 	template<class T>
-	int addKV(const T& value, rapidjson::Document& json, std::deque<std::string>& keys)
+	void addKV(const T& value, rapidjson::Document& json, std::deque<std::string>& keys)
 	{
-		int n = 0;
 		std::stringstream ss;
 		ss << "a" << keys.size();
 		keys.push_back(ss.str());
 
 		// While iterators can be invalidated on insert into deque, references are not
 		json.AddMember(keys.back().c_str(), value, json.GetAllocator());
-		return n;
 	}
 
 	template<class... Ts>
-	std::string createMessage(Opcode opcode, int64_t lastAckTimestamp, Role target, Ts... args)
+	std::string createMessage(Opcode opcode, int64_t lastAckTickSequence, Role target, Ts... args)
 	{
+		lastMessageCreatedTimestamp = getCurrentTimestamp();
+
 		rapidjson::Document json;
 		json.SetObject();
 
-		lastMessageCreatedTimestamp = getCurrentTimestamp();
-
 		json.AddMember("o", (int)opcode, json.GetAllocator());
-		json.AddMember("t", lastMessageCreatedTimestamp, json.GetAllocator());
-		json.AddMember("a", lastAckTimestamp, json.GetAllocator());
+		json.AddMember("t", tickSequence, json.GetAllocator());
+		json.AddMember("a", lastAckTickSequence, json.GetAllocator());
 		json.AddMember("d", (int)target, json.GetAllocator());
 
 		// Initializer list with always more than 0 elements.
@@ -112,22 +117,25 @@ private:
 
 	void send(const std::string& message);
 
-	// Client messages
+	// Client message actions
 	void sendPing();
 	void sendHandshakeAck();
-	void sendKeyInput(Role origin, KeyInput keyInput, cocos2d::Point simulationResultPosition, cocos2d::Point simulationResultVelocity);
-
-	// Server messages
-	void sendPong(Role target, int64_t knownTimestamp);
-	void sendWorldState(Role target, int64_t knownTimestamp);
+	void sendKeyInput(Role origin, KeyInput keyInput);
 	void sendFire(Role origin, cocos2d::Point point);
 
+	// Server message actions
+	void sendPong(Role target, int64_t ackTickSequence);
+	void sendWorldState(Role target, int64_t ackTickSequence);
+	void sendRemoveGiftbox(Role target, int64_t ackTickSequence, int64_t giftboxId);
+
+	void addClientActionLog(PlayerCharacter* player);
 	void acceptAuthoritativeWorldState(
-		int64_t lastAckTimestamp,
+		int64_t lastAckTickSequence,
 		cocos2d::Point player1Position, cocos2d::Point player1Velocity, int player1Score,
 		cocos2d::Point player2Position, cocos2d::Point player2Velocity, int player2Score
 	);
-	void rewindAndReplayClientWorldState(PlayerCharacter* player, cocos2d::Point authoritativePlayerPosition, cocos2d::Point authoritativePlayerVelocity, int64_t lastAckTimestamp);
+	void rewindAndReplayClientWorldState(
+		PlayerCharacter* player, cocos2d::Point authoritativePlayerPosition, cocos2d::Point authoritativePlayerVelocity, int64_t lastAckTickSequence);
 	cocos2d::Sprite* createLagCompensationHitbox(PlayerCharacter* player, PlayerCharacter* opponent);
 
 public:
@@ -153,7 +161,10 @@ public:
 	CC_SYNTHESIZE(PlayerCharacter*, player1, Player1);
 	CC_SYNTHESIZE(PlayerCharacter*, player2, Player2);
 
-	CC_SYNTHESIZE(int64_t, lastAckTimeAsClient, LastAckTimeAsClient);
+	CC_SYNTHESIZE(int64_t, lastAckTickFromServer, LastAckTickFromServer);
 	CC_SYNTHESIZE(int64_t, pingTime, PingTime);
+
+	void saveGiftboxesProperties();
+	void restoreGiftboxesProperties();
 };
 

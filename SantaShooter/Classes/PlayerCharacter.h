@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <list>
 #include <deque>
 #include <utility>
@@ -8,6 +9,9 @@
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
+
+// For cpResetShapeIdCounter
+//#include "chipmunk.h"
 
 #define MOVE_WITH_PHYSICS 1
 
@@ -32,7 +36,11 @@ class PlayerCharacter : public cocos2d::Node
 {
 private:
 	std::list<std::pair<cocos2d::Node*, cocos2d::Node*>> giftboxes;
+	std::vector<std::pair<cocos2d::Point, cocos2d::Point>> gitboxProperties;
+
 	std::deque<std::pair<int64_t, cocos2d::Point>> positionHistory;
+
+	int64_t giftboxIdCounter = 0;
 
 	static int currentContactBitMask;
 	static int getNewContactBitMask()
@@ -63,6 +71,7 @@ public:
 
 	void cleanupGiftbox(float deltaTime);
 	void removeFromGiftboxes(Node* giftbox);
+	void removeFromGiftboxesById(int64_t id);
 
 	CC_SYNTHESIZE(cocos2d::Sprite*, idleRight, IdleRight);
 	CC_SYNTHESIZE(cocos2d::Node*, walkUp, WalkUp);
@@ -71,7 +80,7 @@ public:
 	CC_SYNTHESIZE(cocostudio::timeline::ActionTimeline*, walkDownAnimation, WalkDownAnimation);
 	CC_SYNTHESIZE(int, contactBitMask, ContactBitMask);
 	CC_SYNTHESIZE(int, score, Score);
-	CC_SYNTHESIZE(int64_t, lastAckTimestamp, LastAckTimestamp);
+	CC_SYNTHESIZE(int64_t, lastAckTickSequence, LastAckTickSequence);
 	CC_SYNTHESIZE(KeyInput, keyInput, KeyInput);
 	CC_SYNTHESIZE(AnimationState, animationState, AnimationState);
 	CC_SYNTHESIZE(bool, handShakeDone, HandShakeDone);
@@ -96,5 +105,7 @@ public:
 	{
 		return positionHistory;
 	}
-	void toggleGiftboxPhysics(bool enabled);
+
+	void saveGiftboxesProperties();
+	void restoreGiftboxesProperties();
 };

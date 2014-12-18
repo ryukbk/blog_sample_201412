@@ -13,7 +13,7 @@ bool PlayerCharacter::init()
 	}
 
 	animationState = AnimationState::IDLE;
-	lastAckTimestamp = 0;
+	lastAckTickSequence = 0;
 	handShakeDone = false;
 	score = 0;
 
@@ -201,7 +201,10 @@ void PlayerCharacter::attack(
 	boxBody->setContactTestBitmask(targetContactBitMask);
 	giftbox->setPhysicsBody(boxBody);
 
-	giftbox->setName("giftbox");
+	static const std::string giftboxPrefix = "giftbox_";
+	std::stringstream ss;
+	ss << giftboxPrefix << giftboxIdCounter++;
+	giftbox->setName(ss.str());
 
 	Point start = getPosition();
 	
@@ -266,9 +269,40 @@ void PlayerCharacter::removeFromGiftboxes(Node* giftbox)
 	}), giftboxes.end());
 }
 
-void PlayerCharacter::toggleGiftboxPhysics(bool enabled)
+void PlayerCharacter::removeFromGiftboxesById(int64_t id)
 {
-	for (auto g: giftboxes) {
-		g.first->getPhysicsBody()->setEnable(enabled);
+	giftboxes.erase(std::remove_if(giftboxes.begin(), giftboxes.end(), [id](std::pair<Node*, Node*> g) {
+		std::stringstream ss;
+		ss << "giftbox_" << id;
+		bool matched = false;
+		if (g.first->getName() == ss.str()) {
+			matched = true;
+			if (g.second != nullptr) {
+				g.second->removeFromParent();
+			}
+			g.first->removeFromParent();
+		}
+
+		return matched;
+	}), giftboxes.end());
+}
+
+void PlayerCharacter::saveGiftboxesProperties()
+{
+	for (auto g : giftboxes) {
+		gitboxProperties.push_back(std::make_pair(g.first->getPosition(), g.first->getPhysicsBody()->getVelocity()));
 	}
 }
+
+void PlayerCharacter::restoreGiftboxesProperties()
+{
+	int n = 0;
+	for (auto g : giftboxes) {
+		g.first->setPosition(std::get<0>(gitboxProperties[n]));
+		g.first->getPhysicsBody()->setVelocity(std::get<1>(gitboxProperties[n]));
+		++n;
+	}
+
+	gitboxProperties.clear();
+}
+
