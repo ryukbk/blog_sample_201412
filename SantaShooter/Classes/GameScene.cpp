@@ -163,7 +163,7 @@ void GameScene::update(float deltaTime)
 		break;
 	}
 
-	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
+	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(1.0f / 60.0f);
 
 	if (role == Role::CLIENT1) {
 		if (player1->getKeyInput() != KeyInput::IDLE) {
