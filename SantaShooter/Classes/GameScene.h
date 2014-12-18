@@ -162,5 +162,8 @@ public:
 
 	CC_SYNTHESIZE(int64_t, lastAckTickFromServer, LastAckTickFromServer);
 	CC_SYNTHESIZE(int64_t, pingTime, PingTime);
+
+	void saveGiftboxesProperties();
+	void restoreGiftboxesProperties();
 };
 

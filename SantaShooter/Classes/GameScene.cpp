@@ -742,12 +742,12 @@ void GameScene::rewindAndReplayClientWorldState(
 			clientActionLog.pop_front();
 		}
 
+		player->setPosition(authoritativePlayerPosition);
+		player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
+
 		if (clientActionLog.empty()) {
 			std::string log("Rewind with zero replay");
 			addConsoleText(log);
-
-			player->setPosition(authoritativePlayerPosition);
-			player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
 		} else {
 			std::string log("Rewind for ");
 			std::stringstream ss;
@@ -755,8 +755,7 @@ void GameScene::rewindAndReplayClientWorldState(
 			log += ss.str();
 			addConsoleText(log);
 
-			player->setPosition(authoritativePlayerPosition);
-			player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
+			saveGiftboxesProperties();
 
 			for (auto action : clientActionLog) {
 				switch (std::get<1>(action)) {
@@ -773,7 +772,21 @@ void GameScene::rewindAndReplayClientWorldState(
 
 				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(1.0f / 60.0f);
 			}
+
+			restoreGiftboxesProperties();
 		}
 	}
+}
+
+void GameScene::saveGiftboxesProperties()
+{
+	player1->saveGiftboxesProperties();
+	player2->saveGiftboxesProperties();
+}
+
+void GameScene::restoreGiftboxesProperties()
+{
+	player2->restoreGiftboxesProperties();
+	player1->restoreGiftboxesProperties();
 }
 

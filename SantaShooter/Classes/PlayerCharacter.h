@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <list>
 #include <deque>
 #include <utility>
@@ -32,6 +33,8 @@ class PlayerCharacter : public cocos2d::Node
 {
 private:
 	std::list<std::pair<cocos2d::Node*, cocos2d::Node*>> giftboxes;
+	std::vector<std::pair<cocos2d::Point, cocos2d::Point>> gitboxProperties;
+
 	std::deque<std::pair<int64_t, cocos2d::Point>> positionHistory;
 
 	static int currentContactBitMask;
@@ -96,5 +99,7 @@ public:
 	{
 		return positionHistory;
 	}
-	void toggleGiftboxPhysics(bool enabled);
+
+	void saveGiftboxesProperties();
+	void restoreGiftboxesProperties();
 };
