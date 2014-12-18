@@ -30,7 +30,7 @@ bool GameScene::init()
 		return false;
 	}
 
-	lastAckTimeAsClient = 0;
+	lastAckTickFromServer = 0;
 	pingTime = 0;
 
 	this->scheduleUpdate();
@@ -165,21 +165,29 @@ void GameScene::update(float deltaTime)
 
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(deltaTime);
 
-	if (role == Role::CLIENT1 && player1->getKeyInput() != KeyInput::IDLE) {
-		sendKeyInput(role, player1->getKeyInput(), player1->getPosition(), player1->getPhysicsBody()->getVelocity());
+	if (role == Role::CLIENT1) {
+		if (player1->getKeyInput() != KeyInput::IDLE) {
+			sendKeyInput(role, player1->getKeyInput());
+		}
+
+		addClientActionLog(player1);
 	}
 
 	player1->setKeyInput(KeyInput::IDLE);
 
-	if (role == Role::CLIENT2 && player2->getKeyInput() != KeyInput::IDLE) {
-		sendKeyInput(role, player2->getKeyInput(), player2->getPosition(), player2->getPhysicsBody()->getVelocity());
+	if (role == Role::CLIENT2) {
+		if (player2->getKeyInput() != KeyInput::IDLE) {
+			sendKeyInput(role, player2->getKeyInput());
+		}
+
+		addClientActionLog(player2);
 	}
 
 	player2->setKeyInput(KeyInput::IDLE);
 
 	if (role == Role::SERVER) {
 		if (player1->getHandShakeDone()) {
-			sendWorldState(Role::CLIENT1, player1->getLastAckTimestamp());
+			sendWorldState(Role::CLIENT1, player1->getLastAckTickSequence());
 
 			auto& positionHistory = player1->getPositionHistory();
 			positionHistory.push_front(std::make_pair(lastMessageCreatedTimestamp, player1->getPosition()));
@@ -189,7 +197,7 @@ void GameScene::update(float deltaTime)
 		}
 
 		if (player2->getHandShakeDone()) {
-			sendWorldState(Role::CLIENT2, player2->getLastAckTimestamp());
+			sendWorldState(Role::CLIENT2, player2->getLastAckTickSequence());
 
 			auto& positionHistory = player2->getPositionHistory();
 			positionHistory.push_front(std::make_pair(lastMessageCreatedTimestamp, player2->getPosition()));
@@ -198,6 +206,8 @@ void GameScene::update(float deltaTime)
 			}
 		}
 	}
+
+	++tickSequence;
 }
 
 void GameScene::addConsoleText(std::string text)
@@ -209,7 +219,7 @@ void GameScene::addConsoleText(std::string text)
 	CCLOG(text.c_str());
 
 	consoleLines.push_back(text);
-	if (consoleLines.size() > 8) {
+	if (consoleLines.size() > CONSOLE_LOG_LINES) {
 		consoleLines.pop_front();
 	}
 
@@ -396,19 +406,19 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 
 		auto opcode = (Opcode)json["o"].GetInt();
 		Role origin = Role(json["d"].GetInt());
-		int64_t timestamp = json["t"].GetInt64();
-		int64_t ackTimestamp = json["a"].GetInt64();
+		int64_t tick = json["t"].GetInt64();
+		int64_t ackTickSequence = json["a"].GetInt64();
 
 		if (role == Role::SERVER && opcode == Opcode::KEY_INPUT) {
 			if (origin == Role::CLIENT1) {
-				player1->setLastAckTimestamp(timestamp);
+				player1->setLastAckTickSequence(tick);
 			} else if (origin == Role::CLIENT2) {
-				player2->setLastAckTimestamp(timestamp);
+				player2->setLastAckTickSequence(tick);
 			}
 		}
 
 		if (role == Role::CLIENT1 || role == Role::CLIENT2) {
-			lastAckTimeAsClient = timestamp;
+			lastAckTickFromServer = tick;
 		}
 
 		switch (opcode) {
@@ -436,7 +446,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 				player2->setPingStartTime(std::chrono::high_resolution_clock::now());
 			}
 
-			sendPong(origin, timestamp);
+			sendPong(origin, tick);
 			break;
 		case Opcode::PONG:
 			pingTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - pingStartTime).count();
@@ -463,7 +473,7 @@ void GameScene::onMessage(cocos2d::network::WebSocket* ws, const cocos2d::networ
 		case Opcode::WORLD_STATE:
 			{
 				acceptAuthoritativeWorldState(
-					ackTimestamp,
+					ackTickSequence,
 					Point(json["a0"].GetDouble(), json["a1"].GetDouble()),
 					Point(json["a2"].GetDouble(), json["a3"].GetDouble()),
 					json["a4"].GetInt(),
@@ -608,37 +618,32 @@ void GameScene::send(const std::string& message)
 void GameScene::sendPing()
 {
 	pingStartTime = std::chrono::high_resolution_clock::now();
-	send(createMessage(Opcode::PING, lastAckTimeAsClient, role));
+	send(createMessage(Opcode::PING, lastAckTickFromServer, role));
 }
 
-void GameScene::sendKeyInput(Role origin, KeyInput keyInput, Point simulationResultPosition, Point simulationResultVelocity)
+void GameScene::sendKeyInput(Role origin, KeyInput keyInput)
 {
-	send(createMessage(Opcode::KEY_INPUT, lastAckTimeAsClient, origin, (int)keyInput));
-
-	clientActionLog.push_back(std::make_tuple(lastMessageCreatedTimestamp, keyInput, simulationResultPosition, simulationResultVelocity));
-	if (clientActionLog.size() > CLIENT_ACTION_LOG_CAPACITY) {
-		clientActionLog.pop_front();
-	}
+	send(createMessage(Opcode::KEY_INPUT, lastAckTickFromServer, origin, (int)keyInput));
 }
 
-void GameScene::sendPong(Role target, int64_t knownTimestamp)
+void GameScene::sendPong(Role target, int64_t ackTickSequence)
 {
-	send(createMessage(Opcode::PONG, knownTimestamp, target));
+	send(createMessage(Opcode::PONG, ackTickSequence, target));
 }
 
 void GameScene::sendHandshakeAck()
 {
-	send(createMessage(Opcode::HANDSHAKE_ACK, lastAckTimeAsClient, role));
+	send(createMessage(Opcode::HANDSHAKE_ACK, lastAckTickFromServer, role));
 }
 
-void GameScene::sendWorldState(Role target, int64_t knownTimestamp)
+void GameScene::sendWorldState(Role target, int64_t ackTickSequence)
 {
 	// [world state]
 	// * player1 : position, velocity, score
 	// * player2 : position, velocity, score
 	send(createMessage(
 		Opcode::WORLD_STATE,
-		knownTimestamp,
+		ackTickSequence,
 		target,
 		double(player1->getPosition().x),
 		double(player1->getPosition().y),
@@ -656,14 +661,22 @@ void GameScene::sendWorldState(Role target, int64_t knownTimestamp)
 void GameScene::sendFire(Role origin, Point point)
 {
 	if (origin == Role::CLIENT1) {
-		send(createMessage(Opcode::FIRE, player1->getLastAckTimestamp(), origin, point.x, point.y));
+		send(createMessage(Opcode::FIRE, player1->getLastAckTickSequence(), origin, point.x, point.y));
 	} else if (origin == Role::CLIENT2) {
-		send(createMessage(Opcode::FIRE, player2->getLastAckTimestamp(), origin, point.x, point.y));
+		send(createMessage(Opcode::FIRE, player2->getLastAckTickSequence(), origin, point.x, point.y));
+	}
+}
+
+void GameScene::addClientActionLog(PlayerCharacter* player)
+{
+	clientActionLog.push_back(std::make_tuple(tickSequence, player->getKeyInput(), player->getPosition(), player->getPhysicsBody()->getVelocity()));
+	if (clientActionLog.size() > CLIENT_ACTION_LOG_CAPACITY) {
+		clientActionLog.pop_front();
 	}
 }
 
 void GameScene::acceptAuthoritativeWorldState(
-	int64_t lastAckTimestamp, Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
+	int64_t lastAckTickSequence, Point player1Position, Point player1Velocity, int player1Score, Point player2Position, Point player2Velocity, int player2Score)
 {
 	if (player1->getScore() != player1Score || player2->getScore() != player2Score) {
 		player1->setScore(player1Score);
@@ -683,7 +696,7 @@ void GameScene::acceptAuthoritativeWorldState(
 			player2->playWalkDown();
 		}
 
-		rewindAndReplayClientWorldState(player1, player1Position, player1Velocity, lastAckTimestamp);
+		rewindAndReplayClientWorldState(player1, player1Position, player1Velocity, lastAckTickSequence);
 	}
 
 	if (role == Role::CLIENT2) {
@@ -697,12 +710,13 @@ void GameScene::acceptAuthoritativeWorldState(
 			player1->playWalkDown();
 		}
 
-		rewindAndReplayClientWorldState(player2, player2Position, player2Velocity, lastAckTimestamp);
+		rewindAndReplayClientWorldState(player2, player2Position, player2Velocity, lastAckTickSequence);
 	}
 
 }
 
-void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point authoritativePlayerPosition, Point authoritativePlayerVelocity, int64_t lastAckTimestamp)
+void GameScene::rewindAndReplayClientWorldState(
+	PlayerCharacter* player, Point authoritativePlayerPosition, Point authoritativePlayerVelocity, int64_t lastAckTickSequence)
 {
 	if (clientActionLog.empty()) {
 		player->setPosition(authoritativePlayerPosition);
@@ -711,11 +725,11 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 
 	float distance = 0;
 	for (auto action : clientActionLog) {
-		if (std::get<0>(action) == lastAckTimestamp) {
+		if (std::get<0>(action) == lastAckTickSequence) {
 			distance = std::get<2>(action).distance(authoritativePlayerPosition);
 			if (distance != 0) {
 				std::stringstream ss;
-				ss << distance << " at " << lastAckTimestamp;
+				ss << distance << " at " << lastAckTickSequence;
 				std::string log("Discrepancy: ");
 				addConsoleText(log + ss.str());
 			}
@@ -723,37 +737,28 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 		}
 	}
 
-	if (distance != 0) {
-		while (!clientActionLog.empty() && std::get<0>(clientActionLog.front()) <= lastAckTimestamp) {
+	if (distance > REWIND_DISTANCE_THRESHOLD) {
+		while (!clientActionLog.empty() && std::get<0>(clientActionLog.front()) <= lastAckTickSequence) {
 			clientActionLog.pop_front();
 		}
 
-		int64_t currentTime = getCurrentTimestamp();
 		if (clientActionLog.empty()) {
-			std::string log("Correction");
+			std::string log("Rewind with zero replay");
 			addConsoleText(log);
 
 			player->setPosition(authoritativePlayerPosition);
 			player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
 		} else {
-			std::string log("Rewind & replay: ");
+			std::string log("Rewind for ");
 			std::stringstream ss;
-			ss << distance << " with " << clientActionLog.size() << " logs: ";
+			ss << distance << " diff with " << clientActionLog.size() << " logs replay";
 			log += ss.str();
 			addConsoleText(log);
-
-			int64_t delta = 0;
 
 			player->setPosition(authoritativePlayerPosition);
 			player->getPhysicsBody()->setVelocity(authoritativePlayerVelocity);
 
 			for (auto action : clientActionLog) {
-				if (delta != 0) {
-					Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(std::get<0>(action) - delta));
-				}
-
-				delta = std::get<0>(action);
-
 				switch (std::get<1>(action)) {
 				case KeyInput::UP:
 					player->move(true);
@@ -765,10 +770,8 @@ void GameScene::rewindAndReplayClientWorldState(PlayerCharacter* player, Point a
 					player->stop();
 					break;
 				}
-			}
 
-			if (delta != 0) {
-				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(float(currentTime - delta));
+				Director::getInstance()->getRunningScene()->getPhysicsWorld()->step(1.0f / 60.0f);
 			}
 		}
 	}

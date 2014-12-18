@@ -13,7 +13,7 @@ bool PlayerCharacter::init()
 	}
 
 	animationState = AnimationState::IDLE;
-	lastAckTimestamp = 0;
+	lastAckTickSequence = 0;
 	handShakeDone = false;
 	score = 0;
 
