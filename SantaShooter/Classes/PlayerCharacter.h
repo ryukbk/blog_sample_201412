@@ -10,6 +10,9 @@
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
 
+// For cpResetShapeIdCounter
+//#include "chipmunk.h"
+
 #define MOVE_WITH_PHYSICS 1
 
 static const float PLAYER_X_POS = 80.0f;
