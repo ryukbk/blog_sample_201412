@@ -20,3 +20,8 @@ node.js proxy
     $ cd ..
     $ node proxy.js
 
+License
+---
+
+SantaShooter is released under GNU General Public License, version 3.
+
