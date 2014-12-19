@@ -7,7 +7,7 @@ Environment
 ---
 
 * Cocos2d-x 3.3
-* Cocos Studio 2.0.5
+* Cocos Studio 2.0.6
 * Windows: Microsoft Visual Studio Community 2013
 * Mac: Xcode 6.1.1 (Mac, non-iOS)
 * node.js v0.10.33
