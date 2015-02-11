@@ -1,14 +1,14 @@
 <GameProjectFile>
-  <PropertyGroup Type="Node" Name="WalkLeft" ID="901fbd7e-d118-4735-8a8f-937839ae552d" Version="2.0.2.0" />
+  <PropertyGroup Type="Node" Name="WalkLeft" ID="901fbd7e-d118-4735-8a8f-937839ae552d" Version="2.1.0.0" />
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="40" Speed="1.0000">
-        <Timeline ActionTag="-704515417" FrameType="VisibleFrame">
+        <Timeline ActionTag="-704515417" FrameType="VisibleFrame" Property="VisibleForFrame">
           <BoolFrame FrameIndex="0" Value="True" />
           <BoolFrame FrameIndex="20" Value="False" />
           <BoolFrame FrameIndex="40" Value="True" />
         </Timeline>
-        <Timeline ActionTag="384170072" FrameType="VisibleFrame">
+        <Timeline ActionTag="384170072" FrameType="VisibleFrame" Property="VisibleForFrame">
           <BoolFrame FrameIndex="0" Value="False" />
           <BoolFrame FrameIndex="20" Value="True" />
           <BoolFrame FrameIndex="40" Value="False" />

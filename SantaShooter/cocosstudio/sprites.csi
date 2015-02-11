@@ -1,5 +1,5 @@
 <PlistInfoProjectFile>
-  <PropertyGroup Type="Plist" Name="sprites" ID="75ff0e6e-2207-4faf-a252-35552db11b40" Version="2.0.2.0" />
+  <PropertyGroup Type="Plist" Name="sprites" ID="75ff0e6e-2207-4faf-a252-35552db11b40" Version="2.1.0.0" />
   <Content ExportType="Png" SortAlgorithm="MaxRects" PicturePadding="0" AllowRotation="True" AllowAnySize="False" AllowTrim="False" ctype="PlistInfoData">
     <ImageFiles>
       <FilePathData Path="giftbox.png" />

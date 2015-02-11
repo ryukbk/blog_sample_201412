@@ -1,5 +1,5 @@
 <GameProjectFile>
-  <PropertyGroup Type="Node" Name="Console" ID="0a535115-f12c-47dd-bfb7-e203d0fbdc09" Version="2.0.2.0" />
+  <PropertyGroup Type="Node" Name="Console" ID="0a535115-f12c-47dd-bfb7-e203d0fbdc09" Version="2.1.0.0" />
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="0" Speed="1.0000" />

@@ -1,14 +1,14 @@
 <GameProjectFile>
-  <PropertyGroup Type="Node" Name="WalkDown" ID="7173a8ae-5065-4f22-8717-463f58056916" Version="2.0.2.0" />
+  <PropertyGroup Type="Node" Name="WalkDown" ID="7173a8ae-5065-4f22-8717-463f58056916" Version="2.1.0.0" />
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="40" Speed="1.0000">
-        <Timeline ActionTag="611414457" FrameType="VisibleFrame">
+        <Timeline ActionTag="611414457" FrameType="VisibleFrame" Property="VisibleForFrame">
           <BoolFrame FrameIndex="0" Value="True" />
           <BoolFrame FrameIndex="20" Value="False" />
           <BoolFrame FrameIndex="40" Value="True" />
         </Timeline>
-        <Timeline ActionTag="594192789" FrameType="VisibleFrame">
+        <Timeline ActionTag="594192789" FrameType="VisibleFrame" Property="VisibleForFrame">
           <BoolFrame FrameIndex="0" Value="False" />
           <BoolFrame FrameIndex="20" Value="True" />
           <BoolFrame FrameIndex="40" Value="False" />
